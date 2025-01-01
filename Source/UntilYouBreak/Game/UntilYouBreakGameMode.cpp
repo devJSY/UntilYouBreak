@@ -13,7 +13,7 @@ AUntilYouBreakGameMode::AUntilYouBreakGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
-	// UBPlayerController 헤더 include 없이 Class 설정
+	// UBPlayerController 헤더 include 없이 PlayerControllerClass 설정
 	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/CoreUObject.Class'/Script/UntilYouBreak.UBPlayerController'"));
 	if (PlayerControllerClassRef.Class)
 	{
