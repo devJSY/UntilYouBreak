@@ -10,29 +10,29 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-
-DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+#include "UBCharacterControlData.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AUBCharacterBase
 
 AUBCharacterBase::AUBCharacterBase()
 {
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
+	// Pawn
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
+	// Cpasule
+	// Set size for collision capsule
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	// Movement
 	GetCharacterMovement()->bOrientRotationToMovement = true;			 // Character moves in the direction of input...
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
-
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 500.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -55,10 +55,34 @@ AUBCharacterBase::AUBCharacterBase()
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
+
+	// CharacterControlData
+	static ConstructorHelpers::FObjectFinder<UUBCharacterControlData> ShoulderDataRef(TEXT("/Script/UntilYouBreak.UBCharacterControlData'/Game/UntilYouBreak/CharacterControl/UBC_Shoulder.UBC_Shoulder'"));
+	if (ShoulderDataRef.Object)
+	{
+		CharacterControlManager.Add(ECharacterControlType::Shoulder, ShoulderDataRef.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UUBCharacterControlData> QuaterDataRef(TEXT("/Script/UntilYouBreak.UBCharacterControlData'/Game/UntilYouBreak/CharacterControl/UBC_Quater.UBC_Quater'"));
+	if (QuaterDataRef.Object)
+	{
+		CharacterControlManager.Add(ECharacterControlType::Quater, QuaterDataRef.Object);
+	}
 }
 
 void AUBCharacterBase::BeginPlay()
 {
 	// Call the base class
 	Super::BeginPlay();
+}
+
+void AUBCharacterBase::SetCharacterControlData(const UUBCharacterControlData* CharacterControlData)
+{
+	// Pawn
+	bUseControllerRotationYaw = CharacterControlData->bUseControllerRotationYaw;
+
+	// CharacterMovement
+	GetCharacterMovement()->bOrientRotationToMovement = CharacterControlData->bOrientRotationToMovement;
+	GetCharacterMovement()->bUseControllerDesiredRotation = CharacterControlData->bUseControllerDesiredRotation;
+	GetCharacterMovement()->RotationRate = CharacterControlData->RotationRate;
 }

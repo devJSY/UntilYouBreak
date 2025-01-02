@@ -7,6 +7,8 @@
 #include "InputActionValue.h"
 #include "UBCharacterPlayer.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogUBCharacter, Log, All);
+
 /**
  *
  */
@@ -37,19 +39,33 @@ protected:
 	// Input Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr < class UInputMappingContext> DefaultMappingContext;
+	TObjectPtr<class UInputAction> ChangeControlAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> MoveAction;
+	TObjectPtr<class UInputAction> QuaterMoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> LookAction;
+	TObjectPtr<class UInputAction> ShoulderMoveAction;
 
-	void Move(const FInputActionValue& Value);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ShoulderLookAction;
 
-	void Look(const FInputActionValue& Value);
 
+	void ShoulderMove(const FInputActionValue& Value);
+	void ShoulderLook(const FInputActionValue& Value);
+
+	void QuaterMove(const FInputActionValue& Value);
+
+	ECharacterControlType CurrentCharacterControlType;
+	
+	// Character Control Section
+protected:
+	virtual void SetCharacterControlData(const class UUBCharacterControlData* CharacterControlData) override;
+
+	void ChangeCharacterControl();
+
+	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 };

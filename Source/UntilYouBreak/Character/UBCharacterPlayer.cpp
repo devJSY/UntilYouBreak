@@ -7,6 +7,9 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "UBCharacterControlData.h"
+
+DEFINE_LOG_CATEGORY(LogUBCharacter);
 
 AUBCharacterPlayer::AUBCharacterPlayer()
 {
@@ -21,10 +24,10 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 	FollowCamera->bUsePawnControlRotation = false;								// Camera does not rotate relative to arm
 
 	// Input
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/UntilYouBreak/Input/IMC_Default.IMC_Default'"));
-	if (nullptr != InputMappingContextRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeControlRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Change_Control.IA_Change_Control'"));
+	if (InputActionChangeControlRef.Object)
 	{
-		DefaultMappingContext = InputMappingContextRef.Object;
+		ChangeControlAction = InputActionChangeControlRef.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Jump.IA_Jump'"));
@@ -33,57 +36,62 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 		JumpAction = InputActionJumpRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Look.IA_Look'"));
-	if (InputActionLookRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionQuaterMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Quater_Move.IA_Quater_Move'"));
+	if (InputActionQuaterMoveRef.Object)
 	{
-		LookAction = InputActionLookRef.Object;
+		QuaterMoveAction = InputActionQuaterMoveRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Move.IA_Move'"));
-	if (InputActionMoveRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionShoulderMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Shoulder_Move.IA_Shoulder_Move'"));
+	if (InputActionShoulderMoveRef.Object)
 	{
-		MoveAction = InputActionMoveRef.Object;
+		ShoulderMoveAction = InputActionShoulderMoveRef.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionShoulderLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Shoulder_Look.IA_Shoulder_Look'"));
+	if (InputActionShoulderLookRef.Object)
+	{
+		ShoulderLookAction = InputActionShoulderLookRef.Object;
+	}
+
+	CurrentCharacterControlType = ECharacterControlType::Quater;
 }
 
 void AUBCharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetCharacterControl(CurrentCharacterControlType);
 }
 
 void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	// Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
+		// ChangeControl
+		EnhancedInputComponent->BindAction(ChangeControlAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::ChangeCharacterControl);
+
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::Move);
+		// Quater
+		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::QuaterMove);
 
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::Look);
+		// Shoulder
+		EnhancedInputComponent->BindAction(ShoulderMoveAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::ShoulderMove);
+		EnhancedInputComponent->BindAction(ShoulderLookAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::ShoulderLook);
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogUBCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
 
-void AUBCharacterPlayer::Move(const FInputActionValue& Value)
+void AUBCharacterPlayer::ShoulderMove(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -106,7 +114,7 @@ void AUBCharacterPlayer::Move(const FInputActionValue& Value)
 	}
 }
 
-void AUBCharacterPlayer::Look(const FInputActionValue& Value)
+void AUBCharacterPlayer::ShoulderLook(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
@@ -117,4 +125,72 @@ void AUBCharacterPlayer::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AUBCharacterPlayer::QuaterMove(const FInputActionValue& Value)
+{
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	float InputSizeSquared = MovementVector.SquaredLength();
+	float MovementVectorSize = 1.0f;
+	float MovementVectorSizeSquared = MovementVector.SquaredLength();
+	if (MovementVectorSizeSquared > 1.0f)
+	{
+		MovementVector.Normalize();
+		MovementVectorSizeSquared = 1.0f;
+	}
+	else
+	{
+		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
+	}
+
+	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
+	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
+	AddMovementInput(MoveDirection, MovementVectorSize);
+}
+
+void AUBCharacterPlayer::SetCharacterControlData(const UUBCharacterControlData* CharacterControlData)
+{
+	Super::SetCharacterControlData(CharacterControlData);
+
+	CameraBoom->TargetArmLength = CharacterControlData->TargetArmLength;
+	CameraBoom->SetRelativeRotation(CharacterControlData->RelativeRotation);
+	CameraBoom->bUsePawnControlRotation = CharacterControlData->bUsePawnControlRotation;
+	CameraBoom->bInheritPitch = CharacterControlData->bInheritPitch;
+	CameraBoom->bInheritYaw = CharacterControlData->bInheritYaw;
+	CameraBoom->bInheritRoll = CharacterControlData->bInheritRoll;
+	CameraBoom->bDoCollisionTest = CharacterControlData->bDoCollisionTest;
+}
+
+void AUBCharacterPlayer::ChangeCharacterControl()
+{
+	if (CurrentCharacterControlType == ECharacterControlType::Quater)
+	{
+		SetCharacterControl(ECharacterControlType::Shoulder);
+	}
+	else if (CurrentCharacterControlType == ECharacterControlType::Shoulder)
+	{
+		SetCharacterControl(ECharacterControlType::Quater);
+	}
+}
+
+void AUBCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
+{
+	UUBCharacterControlData* NewCharacterControl = CharacterControlManager[NewCharacterControlType];
+	check(NewCharacterControl);
+
+	SetCharacterControlData(NewCharacterControl);
+
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	{
+		Subsystem->ClearAllMappings();
+		UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext;
+		if (NewMappingContext)
+		{
+			Subsystem->AddMappingContext(NewMappingContext, 0);
+		}
+	}
+
+	CurrentCharacterControlType = NewCharacterControlType;
 }
