@@ -1,13 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "UntilYouBreakGameMode.h"
-#include "Character/UntilYouBreakCharacter.h"
+#include "UBGameMode.h"
 #include "UObject/ConstructorHelpers.h"
 
-AUntilYouBreakGameMode::AUntilYouBreakGameMode()
+AUBGameMode::AUBGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Script/Engine.Blueprint'/Game/UntilYouBreak/Blueprint/BP_UBCharacterPlayer.BP_UBCharacterPlayer_C'"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
