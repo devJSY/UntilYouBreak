@@ -47,20 +47,34 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> QuaterMoveAction;
 
+	/** Time Threshold to know if it was a short press */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	float ShortPressThreshold;
+
+	/** FX Class that we will spawn when clicking */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<class UNiagaraSystem> FXCursor;
+
+	/** True if the controlled character should navigate to the mouse cursor. */
+	uint32	bMoveToMouseCursor : 1;
+	FVector CachedDestination;
+	float	FollowTime; // For how long it has been pressed
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ShoulderMoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ShoulderLookAction;
 
-
 	void ShoulderMove(const FInputActionValue& Value);
 	void ShoulderLook(const FInputActionValue& Value);
 
-	void QuaterMove(const FInputActionValue& Value);
+	void QuaterMoveOnInputStarted();
+	void QuaterMoveOnSetDestinationTriggered();
+	void QuaterMoveOnSetDestinationReleased();
 
 	ECharacterControlType CurrentCharacterControlType;
-	
+
 	// Character Control Section
 protected:
 	virtual void SetCharacterControlData(const class UUBCharacterControlData* CharacterControlData) override;

@@ -10,6 +10,6 @@ public class UntilYouBreak : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] { "UntilYouBreak" });
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "Niagara" });
     }
 }

@@ -8,6 +8,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "UBCharacterControlData.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogUBCharacter);
 
@@ -54,6 +57,16 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 		ShoulderLookAction = InputActionShoulderLookRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraEffectAsset(TEXT("/Script/Niagara.NiagaraSystem'/Game/UntilYouBreak/Cursor/FX_Cursor.FX_Cursor'"));
+	if (NiagaraEffectAsset.Object)
+	{
+		FXCursor = NiagaraEffectAsset.Object;
+	}
+
+	ShortPressThreshold = 0.3f;
+	CachedDestination = FVector::ZeroVector;
+	FollowTime = 0.f;
+
 	CurrentCharacterControlType = ECharacterControlType::Quater;
 }
 
@@ -79,7 +92,10 @@ void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Quater
-		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::QuaterMove);
+		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Started, this, &AUBCharacterPlayer::QuaterMoveOnInputStarted);
+		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::QuaterMoveOnSetDestinationTriggered);
+		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Completed, this, &AUBCharacterPlayer::QuaterMoveOnSetDestinationReleased);
+		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Canceled, this, &AUBCharacterPlayer::QuaterMoveOnSetDestinationReleased);
 
 		// Shoulder
 		EnhancedInputComponent->BindAction(ShoulderMoveAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::ShoulderMove);
@@ -127,26 +143,53 @@ void AUBCharacterPlayer::ShoulderLook(const FInputActionValue& Value)
 	}
 }
 
-void AUBCharacterPlayer::QuaterMove(const FInputActionValue& Value)
+void AUBCharacterPlayer::QuaterMoveOnInputStarted()
 {
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	float InputSizeSquared = MovementVector.SquaredLength();
-	float MovementVectorSize = 1.0f;
-	float MovementVectorSizeSquared = MovementVector.SquaredLength();
-	if (MovementVectorSizeSquared > 1.0f)
+	if (APlayerController* PlayerController = CastChecked<APlayerController>(GetController()))
 	{
-		MovementVector.Normalize();
-		MovementVectorSizeSquared = 1.0f;
+		PlayerController->StopMovement();
 	}
-	else
+}
+
+void AUBCharacterPlayer::QuaterMoveOnSetDestinationTriggered()
+{
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	if (nullptr == PlayerController)
+		return;
+
+	// We flag that the input is being pressed
+	FollowTime += GetWorld()->GetDeltaSeconds();
+
+	// We look for the location in the world where the player has pressed the input
+	FHitResult Hit;
+	bool	   bHitSuccessful = PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
+
+	// If we hit a surface, cache the location
+	if (bHitSuccessful)
 	{
-		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
+		CachedDestination = Hit.Location;
 	}
 
-	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
-	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
-	AddMovementInput(MoveDirection, MovementVectorSize);
+	// Move towards mouse pointer or touch
+	FVector WorldDirection = (CachedDestination - GetActorLocation()).GetSafeNormal();
+	AddMovementInput(WorldDirection, 1.0, false);
+}
+
+void AUBCharacterPlayer::QuaterMoveOnSetDestinationReleased()
+{
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	if (nullptr == PlayerController)
+		return;
+
+	// If it was a short press
+	if (FollowTime <= ShortPressThreshold)
+	{
+		// We move there and spawn some particles
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(PlayerController, CachedDestination);
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(PlayerController, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+	}
+
+	FollowTime = 0.f;
 }
 
 void AUBCharacterPlayer::SetCharacterControlData(const UUBCharacterControlData* CharacterControlData)
@@ -166,6 +209,12 @@ void AUBCharacterPlayer::ChangeCharacterControl()
 {
 	if (CurrentCharacterControlType == ECharacterControlType::Quater)
 	{
+		// 네비게이션 움직임 초기화
+		if (APlayerController* PlayerController = CastChecked<APlayerController>(GetController()))
+		{
+			PlayerController->StopMovement();
+		}
+
 		SetCharacterControl(ECharacterControlType::Shoulder);
 	}
 	else if (CurrentCharacterControlType == ECharacterControlType::Shoulder)
@@ -193,4 +242,23 @@ void AUBCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterC
 	}
 
 	CurrentCharacterControlType = NewCharacterControlType;
+
+	// 마우스 입력 뷰포트 설정
+	if (PlayerController)
+	{
+		if (CurrentCharacterControlType == ECharacterControlType::Quater)
+		{
+			FInputModeGameAndUI InputMode;
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			InputMode.SetHideCursorDuringCapture(false);
+
+			PlayerController->SetInputMode(InputMode);
+			PlayerController->SetShowMouseCursor(true);
+		}
+		else if (CurrentCharacterControlType == ECharacterControlType::Shoulder)
+		{
+			PlayerController->SetInputMode(FInputModeGameOnly());
+			PlayerController->SetShowMouseCursor(false);
+		}
+	}
 }
