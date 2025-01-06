@@ -225,11 +225,14 @@ void AUBCharacterPlayer::ChangeCharacterControl()
 
 void AUBCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
 {
+	// ECharacterControlType에 해당하는 DataAsset 찾아오기
 	UUBCharacterControlData* NewCharacterControl = CharacterControlManager[NewCharacterControlType];
 	check(NewCharacterControl);
 
+	// DataAsset 설정 값 적용
 	SetCharacterControlData(NewCharacterControl);
 
+	// InputMappingContext 변경
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
