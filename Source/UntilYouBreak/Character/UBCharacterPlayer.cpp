@@ -45,6 +45,12 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 		QuaterMoveAction = InputActionQuaterMoveRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraEffectAsset(TEXT("/Script/Niagara.NiagaraSystem'/Game/UntilYouBreak/Cursor/FX_Cursor.FX_Cursor'"));
+	if (NiagaraEffectAsset.Object)
+	{
+		FXCursor = NiagaraEffectAsset.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionShoulderMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Shoulder_Move.IA_Shoulder_Move'"));
 	if (InputActionShoulderMoveRef.Object)
 	{
@@ -57,10 +63,10 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 		ShoulderLookAction = InputActionShoulderLookRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraEffectAsset(TEXT("/Script/Niagara.NiagaraSystem'/Game/UntilYouBreak/Cursor/FX_Cursor.FX_Cursor'"));
-	if (NiagaraEffectAsset.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionAttackRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Attack.IA_Attack'"));
+	if (InputActionAttackRef.Object)
 	{
-		FXCursor = NiagaraEffectAsset.Object;
+		AttackAction = InputActionAttackRef.Object;
 	}
 
 	ShortPressThreshold = 0.3f;
@@ -100,6 +106,9 @@ void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Shoulder
 		EnhancedInputComponent->BindAction(ShoulderMoveAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::ShoulderMove);
 		EnhancedInputComponent->BindAction(ShoulderLookAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::ShoulderLook);
+		
+		// Attack
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::Attack);
 	}
 	else
 	{
@@ -190,6 +199,11 @@ void AUBCharacterPlayer::QuaterMoveOnSetDestinationReleased()
 	}
 
 	FollowTime = 0.f;
+}
+
+void AUBCharacterPlayer::Attack()
+{
+	ProcessComboCommand();
 }
 
 void AUBCharacterPlayer::SetCharacterControlData(const UUBCharacterControlData* CharacterControlData)
