@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Interface/UBAnimationAttackInterface.h"
+#include "Interface/UBCharacterWidgetInterface.h"
 #include "UBCharacterBase.generated.h"
 
 UENUM()
@@ -16,12 +17,14 @@ enum class ECharacterControlType : uint8
 };
 
 UCLASS(config = Game)
-class AUBCharacterBase : public ACharacter, public IUBAnimationAttackInterface
+class AUBCharacterBase : public ACharacter, public IUBAnimationAttackInterface, public IUBCharacterWidgetInterface
 {
 	GENERATED_BODY()
 
 public:
 	AUBCharacterBase();
+
+	virtual void PostInitializeComponents() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -65,5 +68,16 @@ protected:
 	virtual void SetDead();
 	void		 PlayDeadAnimation();
 
-	float DeadEventDelayTime = 5.0f;
+	// Stat Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UUBCharacterStatComponent> Stat;
+
+
+	// UI Widget Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> HpBar;
+
+	virtual void SetupCharacterWidget(class UUBUserWidget* InUserWidget) override;
 };

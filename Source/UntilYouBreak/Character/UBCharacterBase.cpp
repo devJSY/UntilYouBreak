@@ -15,6 +15,9 @@
 #include "UBComboActionData.h"
 #include "Physics/UBCollision.h"
 #include "Engine/DamageEvents.h"
+#include "UI/UBWidgetComponent.h"
+#include "UI/UBHpBarWidget.h"
+#include "UBCharacterStatComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AUBCharacterBase
@@ -91,6 +94,29 @@ AUBCharacterBase::AUBCharacterBase()
 	{
 		DeadMontage = DeadMontageRef.Object;
 	}
+
+	// Stat Component
+	Stat = CreateDefaultSubobject<UUBCharacterStatComponent>(TEXT("Stat"));
+
+	// Widget Component
+	HpBar = CreateDefaultSubobject<UUBWidgetComponent>(TEXT("Widget"));
+	HpBar->SetupAttachment(GetMesh());
+	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UntilYouBreak/UI/WBP_HpBarWidget.WBP_HpBarWidget_C"));
+	if (HpBarWidgetRef.Class)
+	{
+		HpBar->SetWidgetClass(HpBarWidgetRef.Class);
+		HpBar->SetWidgetSpace(EWidgetSpace::Screen);
+		HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
+		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void AUBCharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	Stat->OnHpZero.AddUObject(this, &AUBCharacterBase::SetDead);
 }
 
 void AUBCharacterBase::BeginPlay()
@@ -224,7 +250,7 @@ float AUBCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetDead();
+	Stat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
 }
@@ -242,4 +268,15 @@ void AUBCharacterBase::PlayDeadAnimation()
 	ensure(AnimInstance != nullptr);
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
+}
+
+void AUBCharacterBase::SetupCharacterWidget(UUBUserWidget* InUserWidget)
+{
+	UUBHpBarWidget* HpBarWidget = Cast<UUBHpBarWidget>(InUserWidget);
+	if (HpBarWidget)
+	{
+		HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+		HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
+		Stat->OnHpChanged.AddUObject(HpBarWidget, &UUBHpBarWidget::UpdateHpBar);
+	}
 }
