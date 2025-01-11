@@ -12,8 +12,6 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 
-DEFINE_LOG_CATEGORY(LogUBCharacter);
-
 AUBCharacterPlayer::AUBCharacterPlayer()
 {
 	// Camera

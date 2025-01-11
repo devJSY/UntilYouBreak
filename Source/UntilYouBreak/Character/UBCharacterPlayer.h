@@ -7,8 +7,6 @@
 #include "InputActionValue.h"
 #include "UBCharacterPlayer.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogUBCharacter, Log, All);
-
 /**
  *
  */

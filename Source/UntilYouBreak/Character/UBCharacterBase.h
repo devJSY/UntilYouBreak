@@ -7,7 +7,10 @@
 #include "Logging/LogMacros.h"
 #include "Interface/UBAnimationAttackInterface.h"
 #include "Interface/UBCharacterWidgetInterface.h"
+#include "Interface/UBCharacterItemInterface.h"
 #include "UBCharacterBase.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogUBCharacter, Log, All);
 
 UENUM()
 enum class ECharacterControlType : uint8
@@ -16,8 +19,19 @@ enum class ECharacterControlType : uint8
 	Quater
 };
 
+DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UUBItemData* /*InItemData*/);
+USTRUCT(BlueprintType)
+struct FTakeItemDelegateWrapper
+{
+	GENERATED_BODY()
+	FTakeItemDelegateWrapper() {}
+	FTakeItemDelegateWrapper(const FOnTakeItemDelegate& InItemDelegate)
+		: ItemDelegate(InItemDelegate) {}
+	FOnTakeItemDelegate ItemDelegate;
+};
+
 UCLASS(config = Game)
-class AUBCharacterBase : public ACharacter, public IUBAnimationAttackInterface, public IUBCharacterWidgetInterface
+class AUBCharacterBase : public ACharacter, public IUBAnimationAttackInterface, public IUBCharacterWidgetInterface, public IUBCharacterItemInterface
 {
 	GENERATED_BODY()
 
@@ -73,11 +87,23 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUBCharacterStatComponent> Stat;
 
-
 	// UI Widget Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UWidgetComponent> HpBar;
 
 	virtual void SetupCharacterWidget(class UUBUserWidget* InUserWidget) override;
+
+	// Item Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkeletalMeshComponent> Weapon;
+
+	UPROPERTY()
+	TArray<FTakeItemDelegateWrapper> TakeItemActions;
+
+	virtual void TakeItem(class UUBItemData* InItemData) override;
+	virtual void EquipWeapon(class UUBItemData* InItemData);
+	virtual void DrinkPotion(class UUBItemData* InItemData);
+	virtual void ReadScroll(class UUBItemData* InItemData);
 };

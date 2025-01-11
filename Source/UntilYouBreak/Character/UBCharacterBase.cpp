@@ -18,6 +18,10 @@
 #include "UI/UBWidgetComponent.h"
 #include "UI/UBHpBarWidget.h"
 #include "UBCharacterStatComponent.h"
+#include "Item/UBItemData.h"
+#include "Item/UBWeaponItemData.h"
+
+DEFINE_LOG_CATEGORY(LogUBCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // AUBCharacterBase
@@ -110,6 +114,15 @@ AUBCharacterBase::AUBCharacterBase()
 		HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
 		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+
+	// Item Actions
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AUBCharacterBase::EquipWeapon)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AUBCharacterBase::DrinkPotion)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AUBCharacterBase::ReadScroll)));
+
+	// Weapon Component
+	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	Weapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 }
 
 void AUBCharacterBase::PostInitializeComponents()
@@ -279,4 +292,35 @@ void AUBCharacterBase::SetupCharacterWidget(UUBUserWidget* InUserWidget)
 		HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
 		Stat->OnHpChanged.AddUObject(HpBarWidget, &UUBHpBarWidget::UpdateHpBar);
 	}
+}
+
+void AUBCharacterBase::TakeItem(UUBItemData* InItemData)
+{
+	if (InItemData)
+	{
+		TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+	}
+}
+
+void AUBCharacterBase::DrinkPotion(UUBItemData* InItemData)
+{
+	UE_LOG(LogUBCharacter, Log, TEXT("Drink Potion"));
+}
+
+void AUBCharacterBase::EquipWeapon(UUBItemData* InItemData)
+{
+	UUBWeaponItemData* WeaponItemData = Cast<UUBWeaponItemData>(InItemData);
+	if (WeaponItemData)
+	{
+		if (WeaponItemData->WeaponMesh.IsPending())
+		{
+			WeaponItemData->WeaponMesh.LoadSynchronous();
+		}
+		Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh.Get());
+	}
+}
+
+void AUBCharacterBase::ReadScroll(UUBItemData* InItemData)
+{
+	UE_LOG(LogUBCharacter, Log, TEXT("Read Scroll"));
 }
