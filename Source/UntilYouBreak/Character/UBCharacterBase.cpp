@@ -130,12 +130,7 @@ void AUBCharacterBase::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	Stat->OnHpZero.AddUObject(this, &AUBCharacterBase::SetDead);
-}
-
-void AUBCharacterBase::BeginPlay()
-{
-	// Call the base class
-	Super::BeginPlay();
+	Stat->OnStatChanged.AddUObject(this, &AUBCharacterBase::ApplyStat);
 }
 
 void AUBCharacterBase::SetCharacterControlData(const UUBCharacterControlData* CharacterControlData)
@@ -204,7 +199,7 @@ void AUBCharacterBase::SetComboCheckTimer()
 	int32 ComboIndex = CurrentCombo - 1;
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
 
-	const float AttackSpeedRate = 1.0f;
+	const float AttackSpeedRate = Stat->GetTotalStat().AttackSpeed;
 	float		ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
 	if (ComboEffectiveTime > 0.0f)
 	{
@@ -235,9 +230,9 @@ void AUBCharacterBase::AttackHitCheck()
 	FHitResult			  OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
-	const float	  AttackRange = 40.0f;
-	const float	  AttackRadius = 50.0f;
-	const float	  AttackDamage = 30.0f;
+	const float	  AttackRange = Stat->GetTotalStat().AttackRange;
+	const float	  AttackRadius = Stat->GetTotalStat().AttackRadius;
+	const float	  AttackDamage = Stat->GetTotalStat().Attack;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
@@ -288,7 +283,7 @@ void AUBCharacterBase::SetupCharacterWidget(UUBUserWidget* InUserWidget)
 	UUBHpBarWidget* HpBarWidget = Cast<UUBHpBarWidget>(InUserWidget);
 	if (HpBarWidget)
 	{
-		HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+		HpBarWidget->SetMaxHp(Stat->GetTotalStat().MaxHp);
 		HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
 		Stat->OnHpChanged.AddUObject(HpBarWidget, &UUBHpBarWidget::UpdateHpBar);
 	}
@@ -317,10 +312,27 @@ void AUBCharacterBase::EquipWeapon(UUBItemData* InItemData)
 			WeaponItemData->WeaponMesh.LoadSynchronous();
 		}
 		Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh.Get());
+		Stat->SetModifierStat(WeaponItemData->ModifierStat);
 	}
 }
 
 void AUBCharacterBase::ReadScroll(UUBItemData* InItemData)
 {
 	UE_LOG(LogUBCharacter, Log, TEXT("Read Scroll"));
+}
+
+int32 AUBCharacterBase::GetLevel()
+{
+	return Stat->GetCurrentLevel();
+}
+
+void AUBCharacterBase::SetLevel(int32 InNewLevel)
+{
+	Stat->SetLevelStat(InNewLevel);
+}
+
+void AUBCharacterBase::ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat)
+{
+	float MovementSpeed = (BaseStat + ModifierStat).MovementSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
 }

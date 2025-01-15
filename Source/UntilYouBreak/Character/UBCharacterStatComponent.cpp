@@ -1,18 +1,28 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UBCharacterStatComponent.h"
+#include "GameData/UBGameSingleton.h"
 
 UUBCharacterStatComponent::UUBCharacterStatComponent()
 {
-	MaxHp = 200.0f;
-	CurrentHp = MaxHp;
+	CurrentLevel = 1;
+
+	bWantsInitializeComponent = true;
 }
 
-void UUBCharacterStatComponent::BeginPlay()
+void UUBCharacterStatComponent::InitializeComponent()
 {
-	Super::BeginPlay();
+	Super::InitializeComponent();
 
-	SetHp(MaxHp);
+	SetLevelStat(CurrentLevel);
+	SetHp(BaseStat.MaxHp);
+}
+
+void UUBCharacterStatComponent::SetLevelStat(int32 InNewLevel)
+{
+	CurrentLevel = FMath::Clamp(InNewLevel, 1, UUBGameSingleton::Get().CharacterMaxLevel);
+	SetBaseStat(UUBGameSingleton::Get().GetCharacterStat(CurrentLevel));
+	check(BaseStat.MaxHp > 0.0f);
 }
 
 float UUBCharacterStatComponent::ApplyDamage(float InDamage)
@@ -31,9 +41,7 @@ float UUBCharacterStatComponent::ApplyDamage(float InDamage)
 
 void UUBCharacterStatComponent::SetHp(float NewHp)
 {
-	CurrentHp = FMath::Clamp<float>(NewHp, 0.0f, MaxHp);
+	CurrentHp = FMath::Clamp<float>(NewHp, 0.0f, BaseStat.MaxHp);
 
 	OnHpChanged.Broadcast(CurrentHp);
 }
-
-

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Item/UBItemData.h"
+#include "GameData/UBCharacterStat.h"
 #include "UBWeaponItemData.generated.h"
 
 /**
@@ -16,4 +17,7 @@ class UNTILYOUBREAK_API UUBWeaponItemData : public UUBItemData
 public:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	TSoftObjectPtr<USkeletalMesh> WeaponMesh;
+
+	UPROPERTY(EditAnywhere, Category = Stat)
+	FUBCharacterStat ModifierStat;
 };

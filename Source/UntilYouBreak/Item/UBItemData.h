@@ -23,6 +23,12 @@ class UNTILYOUBREAK_API UUBItemData : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override
+	{
+		return FPrimaryAssetId("UBItemData", GetFName());
+	}
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Type)
 	EItemType Type;
 };

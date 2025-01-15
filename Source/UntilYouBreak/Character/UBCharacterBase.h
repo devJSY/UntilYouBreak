@@ -8,6 +8,7 @@
 #include "Interface/UBAnimationAttackInterface.h"
 #include "Interface/UBCharacterWidgetInterface.h"
 #include "Interface/UBCharacterItemInterface.h"
+#include "GameData/UBCharacterStat.h"
 #include "UBCharacterBase.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogUBCharacter, Log, All);
@@ -39,9 +40,6 @@ public:
 	AUBCharacterBase();
 
 	virtual void PostInitializeComponents() override;
-
-protected:
-	virtual void BeginPlay() override;
 
 	// CharacterControl Section
 protected:
@@ -106,4 +104,10 @@ protected:
 	virtual void EquipWeapon(class UUBItemData* InItemData);
 	virtual void DrinkPotion(class UUBItemData* InItemData);
 	virtual void ReadScroll(class UUBItemData* InItemData);
+
+	// Stat Section
+public:
+	int32 GetLevel();
+	void  SetLevel(int32 InNewLevel);
+	void ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat);
 };

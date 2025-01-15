@@ -7,13 +7,17 @@
 #include "UBitemBox.generated.h"
 
 UCLASS()
-class UNTILYOUBREAK_API AUBitemBox : public AActor
+class UNTILYOUBREAK_API AUBItemBox : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	AUBitemBox();
+	AUBItemBox();
+
+	virtual void PostInitializeComponents() override;
+
+	FORCEINLINE class UBoxComponent* GetTrigger() const { return Trigger; }
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Box)
