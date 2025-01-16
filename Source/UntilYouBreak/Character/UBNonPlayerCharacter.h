@@ -4,16 +4,29 @@
 
 #include "CoreMinimal.h"
 #include "Character/UBCharacterBase.h"
+#include "Engine/StreamableManager.h"
 #include "UBNonPlayerCharacter.generated.h"
 
 /**
- * 
+ *
  */
-UCLASS()
+UCLASS(config = UntilYouBreak)
 class UNTILYOUBREAK_API AUBNonPlayerCharacter : public AUBCharacterBase
 {
 	GENERATED_BODY()
 
+public:
+	AUBNonPlayerCharacter();
+
+protected:
+	virtual void PostInitializeComponents() override;
+
 protected:
 	virtual void SetDead() override;
+	void		 NPCMeshLoadCompleted();
+
+	UPROPERTY(config)
+	TArray<FSoftObjectPath> NPCMeshes;
+
+	TSharedPtr<FStreamableHandle> NPCMeshHandle;
 };
