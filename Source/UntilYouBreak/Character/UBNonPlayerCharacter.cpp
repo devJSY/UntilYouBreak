@@ -3,10 +3,15 @@
 #include "Character/UBNonPlayerCharacter.h"
 #include "UBNonPlayerCharacter.h"
 #include "Engine/AssetManager.h"
+#include "AI/UBAIController.h"
+#include "Character/UBCharacterStatComponent.h"
 
 AUBNonPlayerCharacter::AUBNonPlayerCharacter()
 {
 	GetMesh()->SetHiddenInGame(true);
+
+	AIControllerClass = AUBAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void AUBNonPlayerCharacter::PostInitializeComponents()
@@ -43,4 +48,40 @@ void AUBNonPlayerCharacter::NPCMeshLoadCompleted()
 	}
 
 	NPCMeshHandle->ReleaseHandle();
+}
+
+float AUBNonPlayerCharacter::GetAIPatrolRadius()
+{
+	return 800.0f;
+}
+
+float AUBNonPlayerCharacter::GetAIDetectRange()
+{
+	return 400.0f;
+}
+
+float AUBNonPlayerCharacter::GetAIAttackRange()
+{
+	return Stat->GetTotalStat().AttackRange + Stat->GetTotalStat().AttackRadius * 2;
+}
+
+float AUBNonPlayerCharacter::GetAITurnSpeed()
+{
+	return 2.0f;
+}
+
+void AUBNonPlayerCharacter::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
+{
+	OnAttackFinished = InOnAttackFinished;
+}
+
+void AUBNonPlayerCharacter::AttackByAI()
+{
+	ProcessComboCommand();
+}
+
+void AUBNonPlayerCharacter::NotifyComboActionEnd()
+{
+	Super::NotifyComboActionEnd();
+	OnAttackFinished.ExecuteIfBound();
 }
