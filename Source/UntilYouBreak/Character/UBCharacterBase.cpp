@@ -192,7 +192,7 @@ void AUBCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsProper
 	ensure(CurrentCombo != 0);
 	CurrentCombo = 0;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	
+
 	NotifyComboActionEnd();
 }
 
@@ -231,7 +231,7 @@ void AUBCharacterBase::ComboCheck()
 	}
 }
 
-void AUBCharacterBase::AttackHitCheck()
+bool AUBCharacterBase::AttackHitCheck()
 {
 	FHitResult			  OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
@@ -258,6 +258,8 @@ void AUBCharacterBase::AttackHitCheck()
 	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 
 #endif
+
+	return HitDetected;
 }
 
 float AUBCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

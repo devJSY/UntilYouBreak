@@ -85,3 +85,15 @@ void AUBNonPlayerCharacter::NotifyComboActionEnd()
 	Super::NotifyComboActionEnd();
 	OnAttackFinished.ExecuteIfBound();
 }
+
+bool AUBNonPlayerCharacter::AttackHitCheck()
+{
+	bool HitResult = Super::AttackHitCheck();
+
+	if (HitResult)
+	{
+		ProcessComboCommand();
+	}
+
+	return HitResult;
+}

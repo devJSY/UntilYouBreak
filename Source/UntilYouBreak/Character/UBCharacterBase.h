@@ -58,11 +58,11 @@ protected:
 
 	void ProcessComboCommand();
 
-	void ComboActionBegin();
-	void ComboActionEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
+	void		 ComboActionBegin();
+	void		 ComboActionEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
 	virtual void NotifyComboActionEnd();
-	void SetComboCheckTimer();
-	void ComboCheck();
+	void		 SetComboCheckTimer();
+	void		 ComboCheck();
 
 	int32		 CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
@@ -70,7 +70,7 @@ protected:
 
 	// Attack Hit Section
 protected:
-	virtual void  AttackHitCheck() override;
+	virtual bool  AttackHitCheck() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	// Dead Section
@@ -110,5 +110,5 @@ protected:
 public:
 	int32 GetLevel();
 	void  SetLevel(int32 InNewLevel);
-	void ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat);
+	void  ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat);
 };

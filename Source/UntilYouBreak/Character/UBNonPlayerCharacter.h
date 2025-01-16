@@ -44,4 +44,8 @@ protected:
 	FAICharacterAttackFinished OnAttackFinished;
 
 	virtual void NotifyComboActionEnd() override;
+
+	// Attack Hit Section
+protected:
+	virtual bool AttackHitCheck() override;
 };
