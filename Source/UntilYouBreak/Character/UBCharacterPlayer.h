@@ -85,4 +85,8 @@ protected:
 	void ChangeCharacterControl();
 
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
+
+	// Dead Section
+protected:
+	virtual void SetDead() override;
 };

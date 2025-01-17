@@ -9,6 +9,7 @@
 #include "Interface/UBCharacterWidgetInterface.h"
 #include "Interface/UBCharacterItemInterface.h"
 #include "GameData/UBCharacterStat.h"
+#include "UBCharacterStatComponent.h"
 #include "UBCharacterBase.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogUBCharacter, Log, All);
@@ -78,8 +79,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> DeadMontage;
 
-	virtual void SetDead();
-	void		 PlayDeadAnimation();
+	virtual void	 SetDead();
+	void			 PlayDeadAnimation();
+	FORCEINLINE bool IsDead() const { return Stat->GetCurrentHp() <= 0.f; }
 
 	// Stat Section
 protected:

@@ -77,6 +77,9 @@ void AUBNonPlayerCharacter::SetAIAttackDelegate(const FAICharacterAttackFinished
 
 void AUBNonPlayerCharacter::AttackByAI()
 {
+	if (IsDead())
+		return;
+
 	ProcessComboCommand();
 }
 

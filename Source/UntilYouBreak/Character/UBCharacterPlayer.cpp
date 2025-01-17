@@ -74,11 +74,16 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 	CurrentCharacterControlType = ECharacterControlType::Quater;
 }
 
+#include "Character/UBCharacterStatComponent.h"
+
 void AUBCharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetCharacterControl(CurrentCharacterControlType);
+
+	SetLevel(9);
+	Stat->HealHp(Stat->GetTotalStat().MaxHp);
 }
 
 void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -275,5 +280,16 @@ void AUBCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterC
 			PlayerController->SetInputMode(FInputModeGameOnly());
 			PlayerController->SetShowMouseCursor(false);
 		}
+	}
+}
+
+void AUBCharacterPlayer::SetDead()
+{
+	Super::SetDead();
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		DisableInput(PlayerController);
 	}
 }
