@@ -31,5 +31,4 @@ public:
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) = 0;
 	virtual void AttackByAI() = 0;
-	virtual bool IsAIDead() = 0;
 };

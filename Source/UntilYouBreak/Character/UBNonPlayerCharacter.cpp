@@ -33,6 +33,13 @@ void AUBNonPlayerCharacter::SetDead()
 		Destroy();
 	}),
 		DeadEventDelayTime, false);
+
+	// Stop AI 
+	AUBAIController* AIController = Cast<AUBAIController>(GetController());
+	if (IsValid(AIController))
+	{
+		AIController->StopAI();
+	}
 }
 
 void AUBNonPlayerCharacter::NPCMeshLoadCompleted()
