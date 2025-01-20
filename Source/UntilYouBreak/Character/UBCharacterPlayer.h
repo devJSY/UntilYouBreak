@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "Character/UBCharacterBase.h"
 #include "InputActionValue.h"
+#include "Interface/UBCharacterHUDInterface.h"
 #include "UBCharacterPlayer.generated.h"
 
 /**
  *
  */
 UCLASS()
-class UNTILYOUBREAK_API AUBCharacterPlayer : public AUBCharacterBase
+class UNTILYOUBREAK_API AUBCharacterPlayer : public AUBCharacterBase, public IUBCharacterHUDInterface
 {
 	GENERATED_BODY()
 
@@ -89,4 +90,8 @@ protected:
 	// Dead Section
 protected:
 	virtual void SetDead() override;
+
+	// UI Section
+protected:
+	virtual void SetupHUDWidget(class UUBHUDWidget* InHUDWidget) override;
 };
