@@ -12,6 +12,8 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "UI/UBHUDWidget.h"
+#include "Interface/UBGameInterface.h"
+#include "GameFramework/GameModeBase.h"
 
 AUBCharacterPlayer::AUBCharacterPlayer()
 {
@@ -292,6 +294,12 @@ void AUBCharacterPlayer::SetDead()
 	if (PlayerController)
 	{
 		DisableInput(PlayerController);
+
+		IUBGameInterface* UBGameMode = Cast<IUBGameInterface>(GetWorld()->GetAuthGameMode());
+		if (UBGameMode)
+		{
+			UBGameMode->OnPlayerDead();
+		}
 	}
 }
 

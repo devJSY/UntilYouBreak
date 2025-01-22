@@ -6,6 +6,8 @@
 #include "Character/UBNonPlayerCharacter.h"
 #include "Item/UBItemBox.h"
 #include "Engine/OverlapResult.h"
+#include "Interface/UBGameInterface.h"
+#include "GameFramework/GameModeBase.h"
 
 // Sets default values
 AUBInfiniteStageGimmick::AUBInfiniteStageGimmick()
@@ -194,6 +196,16 @@ void AUBInfiniteStageGimmick::SetChooseNext()
 
 void AUBInfiniteStageGimmick::OnOpponentDestroyed(AActor* DestroyedActor)
 {
+	IUBGameInterface* UBGameMode = Cast<IUBGameInterface>(GetWorld()->GetAuthGameMode());
+	if (UBGameMode)
+	{
+		UBGameMode->OnPlayerScoreChanged(CurrentStageNum);
+		if (UBGameMode->IsGameCleared())
+		{
+			return;
+		}
+	}
+
 	SetState(EStageState::REWARD);
 }
 

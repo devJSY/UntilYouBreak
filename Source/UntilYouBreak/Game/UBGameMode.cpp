@@ -2,6 +2,7 @@
 
 #include "UBGameMode.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Player/UBPlayerController.h"
 
 AUBGameMode::AUBGameMode()
 {
@@ -12,10 +13,49 @@ AUBGameMode::AUBGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
-	// UBPlayerController 헤더 include 없이 PlayerControllerClass 설정
-	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/CoreUObject.Class'/Script/UntilYouBreak.UBPlayerController'"));
-	if (PlayerControllerClassRef.Class)
+	//// UBPlayerController 헤더 include 없이 PlayerControllerClass 설정
+	// static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/CoreUObject.Class'/Script/UntilYouBreak.UBPlayerController'"));
+	// if (PlayerControllerClassRef.Class)
+	//{
+	//	PlayerControllerClass = PlayerControllerClassRef.Class;
+	// }
+
+	ClearScore = 3;
+	CurrentScore = 0;
+	bIsCleared = false;
+}
+
+void AUBGameMode::OnPlayerScoreChanged(int32 NewPlayerScore)
+{
+	CurrentScore = NewPlayerScore;
+
+	AUBPlayerController* UBPlayerController = Cast<AUBPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (UBPlayerController)
 	{
-		PlayerControllerClass = PlayerControllerClassRef.Class;
+		UBPlayerController->GameScoreChanged(CurrentScore);
 	}
+
+	if (CurrentScore >= ClearScore)
+	{
+		bIsCleared = true;
+
+		if (UBPlayerController)
+		{
+			UBPlayerController->GameClear();
+		}
+	}
+}
+
+void AUBGameMode::OnPlayerDead()
+{
+	AUBPlayerController* UBPlayerController = Cast<AUBPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (UBPlayerController)
+	{
+		UBPlayerController->GameOver();
+	}
+}
+
+bool AUBGameMode::IsGameCleared()
+{
+	return bIsCleared;
 }
