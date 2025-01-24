@@ -340,6 +340,11 @@ void AUBCharacterBase::SetLevel(int32 InNewLevel)
 	Stat->SetLevelStat(InNewLevel);
 }
 
+void AUBCharacterBase::LevelUp()
+{
+	SetLevel(GetLevel() + 1);
+}
+
 void AUBCharacterBase::ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat)
 {
 	float MovementSpeed = (BaseStat + ModifierStat).MovementSpeed;

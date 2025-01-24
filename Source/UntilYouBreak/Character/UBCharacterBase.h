@@ -112,5 +112,6 @@ protected:
 public:
 	int32 GetLevel();
 	void  SetLevel(int32 InNewLevel);
+	void  LevelUp();
 	void  ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat);
 };

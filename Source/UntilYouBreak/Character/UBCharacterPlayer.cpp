@@ -70,6 +70,12 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 		AttackAction = InputActionAttackRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLevelUpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_LeevlUp.IA_LeevlUp'"));
+	if (InputActionLevelUpRef.Object)
+	{
+		LevelUpAction = InputActionLevelUpRef.Object;
+	}
+
 	ShortPressThreshold = 0.3f;
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
@@ -77,16 +83,11 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 	CurrentCharacterControlType = ECharacterControlType::Quater;
 }
 
-#include "Character/UBCharacterStatComponent.h"
-
 void AUBCharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetCharacterControl(CurrentCharacterControlType);
-
-	SetLevel(9);
-	Stat->HealHp(Stat->GetTotalStat().MaxHp);
 }
 
 void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -115,6 +116,9 @@ void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::Attack);
+
+		// LevelUp
+		EnhancedInputComponent->BindAction(LevelUpAction, ETriggerEvent::Triggered, this, &AUBCharacterBase::LevelUp);
 	}
 	else
 	{

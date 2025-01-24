@@ -31,12 +31,16 @@ public:
 	FORCEINLINE float GetCurrentLevel() const { return CurrentLevel; }
 	FORCEINLINE void  AddBaseStat(const FUBCharacterStat& InAddBaseStat)
 	{
+		float HealAmount = FMath::Clamp(InAddBaseStat.MaxHp - BaseStat.MaxHp, 0.0f, InAddBaseStat.MaxHp);
 		BaseStat = BaseStat + InAddBaseStat;
+		HealHp(HealAmount);
 		OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat());
 	}
 	FORCEINLINE void SetBaseStat(const FUBCharacterStat& InBaseStat)
 	{
+		float HealAmount = FMath::Clamp(InBaseStat.MaxHp - BaseStat.MaxHp, 0.0f, InBaseStat.MaxHp);
 		BaseStat = InBaseStat;
+		HealHp(HealAmount);
 		OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat());
 	}
 	FORCEINLINE void SetModifierStat(const FUBCharacterStat& InModifierStat)
@@ -51,10 +55,13 @@ public:
 	FORCEINLINE float					GetCurrentHp() const { return CurrentHp; }
 	FORCEINLINE void					HealHp(float InHealAmount)
 	{
+		if (InHealAmount <= 0.f)
+			return;
+
 		CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, GetTotalStat().MaxHp);
 		OnHpChanged.Broadcast(CurrentHp);
 	}
-	float			  ApplyDamage(float InDamage);
+	float ApplyDamage(float InDamage);
 
 protected:
 	void SetHp(float NewHp);
