@@ -37,7 +37,7 @@ void AUBGameMode::PostInitializeComponents()
 
 	if (SaveGameInstance)
 	{
-		CurrentStageLevel = ++(SaveGameInstance->StageLevel);
+		CurrentStageLevel = SaveGameInstance->StageLevel = FMath::Clamp(SaveGameInstance->StageLevel + 1, 0, UUBGameSingleton::Get().StageMaxLevel);
 	}
 	else
 	{
