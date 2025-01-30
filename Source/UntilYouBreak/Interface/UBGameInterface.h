@@ -22,7 +22,8 @@ class UNTILYOUBREAK_API IUBGameInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void OnPlayerScoreChanged(int32 NewPlayerScore) = 0;
-	virtual void OnPlayerDead() = 0;
-	virtual bool IsGameCleared() = 0;
+	virtual void  OnEnemyDestroyed() = 0;
+	virtual void  OnPlayerDead() = 0;
+	virtual bool  IsGameCleared() = 0;
+	virtual int32 GetCurrentStageNum() const = 0;
 };

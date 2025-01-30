@@ -27,7 +27,7 @@ void AUBNonPlayerCharacter::SetDead()
 {
 	Super::SetDead();
 
-	const float	 DeadEventDelayTime = 5.0f;
+	const float	 DeadEventDelayTime = 2.0f;
 	FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda([&]() {
 		Destroy();

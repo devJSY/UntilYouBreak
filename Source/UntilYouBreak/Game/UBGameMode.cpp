@@ -3,6 +3,7 @@
 #include "UBGameMode.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Player/UBPlayerController.h"
+#include "GameData/UBGameSingleton.h"
 
 AUBGameMode::AUBGameMode()
 {
@@ -20,22 +21,29 @@ AUBGameMode::AUBGameMode()
 	//	PlayerControllerClass = PlayerControllerClassRef.Class;
 	// }
 
-	ClearScore = 3;
-	CurrentScore = 0;
+	CurrentStageNum = 3;
+	RemainingEnemyCount = 1;
 	bIsCleared = false;
 }
 
-void AUBGameMode::OnPlayerScoreChanged(int32 NewPlayerScore)
+void AUBGameMode::BeginPlay()
 {
-	CurrentScore = NewPlayerScore;
+	Super::BeginPlay();
+
+	RemainingEnemyCount = UUBGameSingleton::Get().GetStageLevel(CurrentStageNum).EnemyCount;
+}
+
+void AUBGameMode::OnEnemyDestroyed()
+{
+	--RemainingEnemyCount;
 
 	AUBPlayerController* UBPlayerController = Cast<AUBPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (UBPlayerController)
 	{
-		UBPlayerController->GameScoreChanged(CurrentScore);
+		UBPlayerController->GameScoreChanged(RemainingEnemyCount);
 	}
 
-	if (CurrentScore >= ClearScore)
+	if (0 >= RemainingEnemyCount)
 	{
 		bIsCleared = true;
 

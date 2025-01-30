@@ -15,19 +15,20 @@ class AUBGameMode : public AGameModeBase, public IUBGameInterface
 public:
 	AUBGameMode();
 
-	virtual void OnPlayerScoreChanged(int32 NewPlayerScore) override;
-	virtual void OnPlayerDead() override;
-	virtual bool IsGameCleared() override;
+	virtual void BeginPlay() override;
+
+public:
+	virtual void  OnEnemyDestroyed() override;
+	virtual void  OnPlayerDead() override;
+	virtual bool  IsGameCleared() override;
+	virtual int32 GetCurrentStageNum() const override { return CurrentStageNum; };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Game)
-	int32 ClearScore;
+	int32 CurrentStageNum;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Game)
-	int32 CurrentScore;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Game)
+	int32 RemainingEnemyCount;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Game)
 	uint8 bIsCleared : 1;
 };
-
-
-

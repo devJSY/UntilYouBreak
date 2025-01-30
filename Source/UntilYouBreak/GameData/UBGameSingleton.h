@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "UBCharacterStat.h"
+#include "UBStageLevel.h"
 #include "UBGameSingleton.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogUBGameSingleton, Error, All);
@@ -28,6 +29,14 @@ public:
 	UPROPERTY()
 	int32 CharacterMaxLevel;
 
+	// Stage Level Data Section
+public:
+	FORCEINLINE FUBStageLevel GetStageLevel(int32 InLevel) const { return StageLevelTable.IsValidIndex(InLevel - 1) ? StageLevelTable[InLevel - 1] : FUBStageLevel(); }
+
+	UPROPERTY()
+	int32 StageMaxLevel;
+
 private:
 	TArray<FUBCharacterStat> CharacterStatTable;
+	TArray<FUBStageLevel>	 StageLevelTable;
 };
