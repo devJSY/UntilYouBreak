@@ -25,5 +25,5 @@ public:
 	virtual void  OnEnemyDestroyed() = 0;
 	virtual void  OnPlayerDead() = 0;
 	virtual bool  IsGameCleared() = 0;
-	virtual int32 GetCurrentStageNum() const = 0;
+	virtual int32 GetCurrentStageLevel() const = 0;
 };

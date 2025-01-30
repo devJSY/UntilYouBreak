@@ -4,6 +4,9 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Player/UBPlayerController.h"
 #include "GameData/UBGameSingleton.h"
+#include "Game/UBStageSaveGame.h"
+#include "Kismet/GameplayStatics.h"
+#include "UBGameInstance.h"
 
 AUBGameMode::AUBGameMode()
 {
@@ -21,16 +24,28 @@ AUBGameMode::AUBGameMode()
 	//	PlayerControllerClass = PlayerControllerClassRef.Class;
 	// }
 
-	CurrentStageNum = 3;
+	CurrentStageLevel = 1;
 	RemainingEnemyCount = 1;
 	bIsCleared = false;
 }
 
-void AUBGameMode::BeginPlay()
+void AUBGameMode::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
 
-	RemainingEnemyCount = UUBGameSingleton::Get().GetStageLevel(CurrentStageNum).EnemyCount;
+	SaveGameInstance = Cast<UUBStageSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("Stage"), 0));
+
+	if (SaveGameInstance)
+	{
+		CurrentStageLevel = ++(SaveGameInstance->StageLevel);
+	}
+	else
+	{
+		SaveGameInstance = NewObject<UUBStageSaveGame>();
+		SaveGameInstance->StageLevel = 1;
+	}
+
+	RemainingEnemyCount = UUBGameSingleton::Get().GetStageLevel(CurrentStageLevel).EnemyCount;
 }
 
 void AUBGameMode::OnEnemyDestroyed()
@@ -49,6 +64,11 @@ void AUBGameMode::OnEnemyDestroyed()
 
 		if (UBPlayerController)
 		{
+			if (!UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("Stage"), 0))
+			{
+				UE_LOG(LogUBPlayerController, Error, TEXT("Save Game Error!"));
+			}
+
 			UBPlayerController->GameClear();
 		}
 	}
@@ -56,9 +76,16 @@ void AUBGameMode::OnEnemyDestroyed()
 
 void AUBGameMode::OnPlayerDead()
 {
+	UUBGameInstance* UBGameInstance = Cast<UUBGameInstance>(GetWorld()->GetGameInstance());
+	if (UBGameInstance)
+	{
+		UBGameInstance->DeleteStageSaveGame();
+	}
+
 	AUBPlayerController* UBPlayerController = Cast<AUBPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (UBPlayerController)
 	{
+
 		UBPlayerController->GameOver();
 	}
 }
