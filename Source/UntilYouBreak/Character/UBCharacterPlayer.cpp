@@ -14,6 +14,7 @@
 #include "UI/UBHUDWidget.h"
 #include "Interface/UBGameInterface.h"
 #include "GameFramework/GameModeBase.h"
+#include "Animation/UBAnimInstance.h"
 
 AUBCharacterPlayer::AUBCharacterPlayer()
 {

@@ -14,6 +14,13 @@ UCLASS()
 class UNTILYOUBREAK_API UUBWeaponItemData : public UUBItemData
 {
 	GENERATED_BODY()
+
+public:
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override
+	{
+		return FPrimaryAssetId("UBWeaponItemData", GetFName());
+	}
+
 public:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	TSoftObjectPtr<USkeletalMesh> WeaponMesh;

@@ -99,6 +99,7 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USkeletalMeshComponent> Weapon;
+	class UUBWeaponItemData*				 WeaponItemData;
 
 	UPROPERTY()
 	TArray<FTakeItemDelegateWrapper> TakeItemActions;
@@ -107,6 +108,10 @@ protected:
 	virtual void EquipWeapon(class UUBItemData* InItemData);
 	virtual void DrinkPotion(class UUBItemData* InItemData);
 	virtual void ReadScroll(class UUBItemData* InItemData);
+
+public:
+	UFUNCTION()
+	void DropWeapon(AActor* DestroyedActor);
 
 	// Stat Section
 public:

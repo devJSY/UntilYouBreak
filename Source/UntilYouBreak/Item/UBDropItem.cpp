@@ -1,18 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Item/UBItemBox.h"
+#include "Item/UBDropItem.h"
 #include "Components/BoxComponent.h"
 #include "Physics/UBCollision.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Interface/UBCharacterItemInterface.h"
 #include "Engine/AssetManager.h"
-#include "UBItemData.h"
+#include "UBWeaponItemData.h"
 
 // Sets default values
-AUBItemBox::AUBItemBox()
+AUBDropItem::AUBDropItem()
 {
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	Effect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Effect"));
 
 	RootComponent = Trigger;
@@ -21,14 +21,9 @@ AUBItemBox::AUBItemBox()
 
 	Trigger->SetCollisionProfileName(CPROFILE_UBTRIGGER);
 	Trigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
-	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AUBItemBox::OnOverlapBegin);
+	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AUBDropItem::OnOverlapBegin);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/UntilYouBreak/Environment/Props/SM_Env_Breakables_Box1.SM_Env_Breakables_Box1'"));
-	if (BoxMeshRef.Object)
-	{
-		Mesh->SetStaticMesh(BoxMeshRef.Object);
-	}
-	Mesh->SetRelativeLocation(FVector(0.0f, -3.5f, -30.0f));
+	Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, -40.0f));
 	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
 
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> EffectRef(TEXT("/Script/Engine.ParticleSystem'/Game/UntilYouBreak/Effect/P_TreasureChest_Open_Mesh.P_TreasureChest_Open_Mesh'"));
@@ -39,27 +34,28 @@ AUBItemBox::AUBItemBox()
 	}
 }
 
-void AUBItemBox::PostInitializeComponents()
+void AUBDropItem::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	UAssetManager& Manager = UAssetManager::Get();
-
-	TArray<FPrimaryAssetId> Assets;
-	Manager.GetPrimaryAssetIdList(TEXT("UBItemData"), Assets);
-	ensure(0 < Assets.Num());
-
-	int32		   RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
-	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
-	if (AssetPtr.IsPending())
-	{
-		AssetPtr.LoadSynchronous();
-	}
-	Item = Cast<UUBItemData>(AssetPtr.Get());
-	ensure(Item);
+	SetItem(Item);
 }
 
-void AUBItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+void AUBDropItem::SetItem(UUBWeaponItemData* InItem)
+{
+	Item = InItem;
+
+	if (Item)
+	{
+		if (Item->WeaponMesh.IsPending())
+		{
+			Item->WeaponMesh.LoadSynchronous();
+		}
+		Mesh->SetSkeletalMesh(Item->WeaponMesh.Get());
+	}
+}
+
+void AUBDropItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
 	if (nullptr == Item)
 	{
@@ -76,10 +72,10 @@ void AUBItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 	Effect->Activate(true);
 	Mesh->SetHiddenInGame(true);
 	SetActorEnableCollision(false);
-	Effect->OnSystemFinished.AddDynamic(this, &AUBItemBox::OnEffectFinished);
+	Effect->OnSystemFinished.AddDynamic(this, &AUBDropItem::OnEffectFinished);
 }
 
-void AUBItemBox::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
+void AUBDropItem::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
 {
 	Destroy();
 }

@@ -20,6 +20,7 @@
 #include "UBCharacterStatComponent.h"
 #include "Item/UBItemData.h"
 #include "Item/UBWeaponItemData.h"
+#include "Item/UBDropItem.h"
 
 DEFINE_LOG_CATEGORY(LogUBCharacter);
 
@@ -262,11 +263,18 @@ bool AUBCharacterBase::AttackHitCheck()
 	return HitDetected;
 }
 
+#include "UBCharacterPlayer.h"
+
 float AUBCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	Stat->ApplyDamage(DamageAmount);
+	// Test
+	AUBCharacterPlayer* Player = Cast<AUBCharacterPlayer>(this);
+	if (!Player)
+	{
+		Stat->ApplyDamage(DamageAmount);
+	}
 
 	return DamageAmount;
 }
@@ -313,7 +321,7 @@ void AUBCharacterBase::DrinkPotion(UUBItemData* InItemData)
 
 void AUBCharacterBase::EquipWeapon(UUBItemData* InItemData)
 {
-	UUBWeaponItemData* WeaponItemData = Cast<UUBWeaponItemData>(InItemData);
+	WeaponItemData = Cast<UUBWeaponItemData>(InItemData);
 	if (WeaponItemData)
 	{
 		if (WeaponItemData->WeaponMesh.IsPending())
@@ -328,6 +336,22 @@ void AUBCharacterBase::EquipWeapon(UUBItemData* InItemData)
 void AUBCharacterBase::ReadScroll(UUBItemData* InItemData)
 {
 	UE_LOG(LogUBCharacter, Log, TEXT("Read Scroll"));
+}
+
+void AUBCharacterBase::DropWeapon(AActor* DestroyedActor)
+{
+	if (WeaponItemData)
+	{
+		const FTransform SpawnTransform(GetActorLocation());
+		AUBDropItem*	 DropItem = GetWorld()->SpawnActorDeferred<AUBDropItem>(AUBDropItem::StaticClass(), SpawnTransform);
+		if (DropItem)
+		{
+			DropItem->SetItem(WeaponItemData);
+			DropItem->FinishSpawning(SpawnTransform);
+		}
+
+		WeaponItemData = nullptr;
+	}
 }
 
 int32 AUBCharacterBase::GetLevel()

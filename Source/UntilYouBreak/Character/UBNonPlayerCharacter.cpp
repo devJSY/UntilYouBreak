@@ -5,6 +5,7 @@
 #include "Engine/AssetManager.h"
 #include "AI/UBAIController.h"
 #include "Character/UBCharacterStatComponent.h"
+#include "Item/UBWeaponItemData.h"
 
 AUBNonPlayerCharacter::AUBNonPlayerCharacter()
 {
@@ -14,10 +15,39 @@ AUBNonPlayerCharacter::AUBNonPlayerCharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
+void AUBNonPlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// 랜덤 아이템 소유 설정
+	UAssetManager& Manager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetId> Assets;
+	Manager.GetPrimaryAssetIdList(TEXT("UBWeaponItemData"), Assets);
+	if (!Assets.IsEmpty())
+	{
+		int32		   RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		UUBWeaponItemData* WeaponItem = Cast<UUBWeaponItemData>(AssetPtr.Get());
+		if (WeaponItem)
+		{
+			EquipWeapon(WeaponItem);
+		}
+	}
+
+	// 사망 시 드랍 아이템 생성
+	OnDestroyed.AddDynamic(this, &AUBCharacterBase::DropWeapon);
+}
+
 void AUBNonPlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
+	// Mesh 설정
 	ensure(NPCMeshes.Num() > 0);
 	int32 RandIndex = FMath::RandRange(0, NPCMeshes.Num() - 1);
 	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(NPCMeshes[RandIndex], FStreamableDelegate::CreateUObject(this, &AUBNonPlayerCharacter::NPCMeshLoadCompleted));
@@ -27,14 +57,14 @@ void AUBNonPlayerCharacter::SetDead()
 {
 	Super::SetDead();
 
-	const float	 DeadEventDelayTime = 2.0f;
+	const float	 DeadEventDelayTime = 3.0f;
 	FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda([&]() {
 		Destroy();
 	}),
 		DeadEventDelayTime, false);
 
-	// Stop AI 
+	// Stop AI
 	AUBAIController* AIController = Cast<AUBAIController>(GetController());
 	if (IsValid(AIController))
 	{
