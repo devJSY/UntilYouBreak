@@ -21,7 +21,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -73,7 +73,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> PickupAction;
-	
+
 	void ShoulderMove(const FInputActionValue& Value);
 	void ShoulderLook(const FInputActionValue& Value);
 
@@ -82,6 +82,9 @@ protected:
 	void QuaterMoveOnSetDestinationReleased();
 
 	ECharacterControlType CurrentCharacterControlType;
+
+	UFUNCTION(BlueprintCallable, Category = CharacterControl, Meta = (DisplayName = "OnSetCharacterControlInputModeCpp"))
+	void SetCharacterControlInputMode();
 
 	void Attack();
 

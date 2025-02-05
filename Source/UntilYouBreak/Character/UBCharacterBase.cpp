@@ -149,6 +149,10 @@ void AUBCharacterBase::ProcessComboCommand()
 {
 	if (0 == CurrentCombo)
 	{
+		// 땅에 붙어있지 않는 경우 공격 수행 X
+		if (!GetCharacterMovement()->IsMovingOnGround())
+			return;
+
 		ComboActionBegin();
 		return;
 	}

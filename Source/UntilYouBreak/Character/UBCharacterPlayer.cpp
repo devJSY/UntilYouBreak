@@ -222,6 +222,28 @@ void AUBCharacterPlayer::QuaterMoveOnSetDestinationReleased()
 	FollowTime = 0.f;
 }
 
+void AUBCharacterPlayer::SetCharacterControlInputMode()
+{
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		if (CurrentCharacterControlType == ECharacterControlType::Quater)
+		{
+			FInputModeGameAndUI InputMode;
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			InputMode.SetHideCursorDuringCapture(false);
+
+			PlayerController->SetInputMode(InputMode);
+			PlayerController->SetShowMouseCursor(true);
+		}
+		else if (CurrentCharacterControlType == ECharacterControlType::Shoulder)
+		{
+			PlayerController->SetInputMode(FInputModeGameOnly());
+			PlayerController->SetShowMouseCursor(false);
+		}
+	}
+}
+
 void AUBCharacterPlayer::Attack()
 {
 	ProcessComboCommand();
@@ -305,23 +327,7 @@ void AUBCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterC
 	CurrentCharacterControlType = NewCharacterControlType;
 
 	// 마우스 입력 뷰포트 설정
-	if (PlayerController)
-	{
-		if (CurrentCharacterControlType == ECharacterControlType::Quater)
-		{
-			FInputModeGameAndUI InputMode;
-			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			InputMode.SetHideCursorDuringCapture(false);
-
-			PlayerController->SetInputMode(InputMode);
-			PlayerController->SetShowMouseCursor(true);
-		}
-		else if (CurrentCharacterControlType == ECharacterControlType::Shoulder)
-		{
-			PlayerController->SetInputMode(FInputModeGameOnly());
-			PlayerController->SetShowMouseCursor(false);
-		}
-	}
+	SetCharacterControlInputMode();
 }
 
 void AUBCharacterPlayer::SetDead()
