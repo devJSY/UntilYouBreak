@@ -7,7 +7,7 @@
 #include "UBGameInstance.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class UNTILYOUBREAK_API UUBGameInstance : public UGameInstance
@@ -20,5 +20,6 @@ public:
 public:
 	virtual void Shutdown() override;
 
+	UFUNCTION(BlueprintCallable, Category = SaveGame, Meta = (DisplayName = "OnDeleteStageSaveGameCpp"))
 	void DeleteStageSaveGame();
 };
