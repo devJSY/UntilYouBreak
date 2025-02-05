@@ -321,9 +321,18 @@ void AUBCharacterBase::DrinkPotion(UUBItemData* InItemData)
 
 void AUBCharacterBase::EquipWeapon(UUBItemData* InItemData)
 {
-	WeaponItemData = Cast<UUBWeaponItemData>(InItemData);
-	if (WeaponItemData)
+	UUBWeaponItemData* InWeaponItemData = Cast<UUBWeaponItemData>(InItemData);
+	if (InWeaponItemData)
 	{
+		// 이미 무기를 들고있는 경우 내려놓는다.
+		if (nullptr != WeaponItemData)
+		{
+			DropWeapon(this);
+		}
+
+		WeaponItemData = InWeaponItemData;
+
+		// 무기 획득
 		if (WeaponItemData->WeaponMesh.IsPending())
 		{
 			WeaponItemData->WeaponMesh.LoadSynchronous();

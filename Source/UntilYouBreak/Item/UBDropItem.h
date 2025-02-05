@@ -35,9 +35,20 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Item)
 	TObjectPtr<class UUBWeaponItemData> Item;
 
+	// UI Widget Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> PickupKeyWidget;
+
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 
 	UFUNCTION()
+	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
 	void OnEffectFinished(class UParticleSystemComponent* ParticleSystem);
+
+public:
+	void PickupItem(AActor* OtherActor);
 };

@@ -15,6 +15,7 @@
 #include "Interface/UBGameInterface.h"
 #include "GameFramework/GameModeBase.h"
 #include "Animation/UBAnimInstance.h"
+#include "Item/UBDropItem.h"
 
 AUBCharacterPlayer::AUBCharacterPlayer()
 {
@@ -77,6 +78,12 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 		LevelUpAction = InputActionLevelUpRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionPickupRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Pickup.IA_Pickup'"));
+	if (InputActionPickupRef.Object)
+	{
+		PickupAction = InputActionPickupRef.Object;
+	}
+
 	ShortPressThreshold = 0.3f;
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
@@ -120,6 +127,9 @@ void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// LevelUp
 		EnhancedInputComponent->BindAction(LevelUpAction, ETriggerEvent::Triggered, this, &AUBCharacterBase::LevelUp);
+
+		// Pickup
+		EnhancedInputComponent->BindAction(PickupAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::Pickup);
 	}
 	else
 	{
@@ -215,6 +225,29 @@ void AUBCharacterPlayer::QuaterMoveOnSetDestinationReleased()
 void AUBCharacterPlayer::Attack()
 {
 	ProcessComboCommand();
+}
+
+void AUBCharacterPlayer::Pickup()
+{
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors);
+
+	// 플레이어 기준 거리순 정렬
+	AActor* Player = this;
+	OverlappingActors.Sort([Player](const AActor& A, const AActor& B) {
+		return A.GetDistanceTo(Player) < B.GetDistanceTo(Player);
+	});
+
+	// Overlap 중인 액터 목록 출력
+	for (AActor* Actor : OverlappingActors)
+	{
+		AUBDropItem* DropItem = Cast<AUBDropItem>(Actor);
+		if (nullptr != DropItem)
+		{
+			DropItem->PickupItem(this);
+			break;
+		}
+	}
 }
 
 void AUBCharacterPlayer::SetCharacterControlData(const UUBCharacterControlData* CharacterControlData)

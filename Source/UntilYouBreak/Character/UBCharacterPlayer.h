@@ -70,6 +70,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> LevelUpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> PickupAction;
 	
 	void ShoulderMove(const FInputActionValue& Value);
 	void ShoulderLook(const FInputActionValue& Value);
@@ -81,6 +84,8 @@ protected:
 	ECharacterControlType CurrentCharacterControlType;
 
 	void Attack();
+
+	void Pickup();
 
 	// Character Control Section
 protected:

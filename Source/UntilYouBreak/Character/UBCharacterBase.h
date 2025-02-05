@@ -105,6 +105,7 @@ protected:
 	TArray<FTakeItemDelegateWrapper> TakeItemActions;
 
 	virtual void TakeItem(class UUBItemData* InItemData) override;
+	
 	virtual void EquipWeapon(class UUBItemData* InItemData);
 	virtual void DrinkPotion(class UUBItemData* InItemData);
 	virtual void ReadScroll(class UUBItemData* InItemData);
