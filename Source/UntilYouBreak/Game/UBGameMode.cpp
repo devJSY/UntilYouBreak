@@ -60,8 +60,6 @@ void AUBGameMode::OnEnemyDestroyed()
 
 	if (0 >= RemainingEnemyCount)
 	{
-		bIsCleared = true;
-
 		if (UBPlayerController)
 		{
 			if (!UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("Stage"), 0))
@@ -69,7 +67,15 @@ void AUBGameMode::OnEnemyDestroyed()
 				UE_LOG(LogUBPlayerController, Error, TEXT("Save Game Error!"));
 			}
 
-			UBPlayerController->GameClear();
+			if (CurrentStageLevel == UUBGameSingleton::Get().StageMaxLevel)
+			{
+				UBPlayerController->GameClear();
+				bIsCleared = true;
+			}
+			else
+			{
+				UBPlayerController->StageClear();
+			}
 		}
 	}
 }

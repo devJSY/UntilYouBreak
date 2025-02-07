@@ -21,6 +21,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = Game, Meta = (DisplayName = "OnScoreChangedCpp"))
 	void K2_OnScoreChanged(int32 NewScore);
+	UFUNCTION(BlueprintImplementableEvent, Category = Game, Meta = (DisplayName = "OnStageClearCpp"))
+	void K2_OnStageClear();
 	UFUNCTION(BlueprintImplementableEvent, Category = Game, Meta = (DisplayName = "OnGameClearCpp"))
 	void K2_OnGameClear();
 	UFUNCTION(BlueprintImplementableEvent, Category = Game, Meta = (DisplayName = "OnGameOverCpp"))
@@ -29,6 +31,7 @@ public:
 	void K2_OnGameRetryCount(int32 NewRetryCount);
 
 	void GameScoreChanged(int32 NewScore);
+	void StageClear();
 	void GameClear();
 	void GameOver();
 

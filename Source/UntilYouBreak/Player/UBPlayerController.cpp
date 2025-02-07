@@ -40,6 +40,11 @@ void AUBPlayerController::GameScoreChanged(int32 NewScore)
 	K2_OnScoreChanged(NewScore);
 }
 
+void AUBPlayerController::StageClear()
+{
+	K2_OnStageClear();
+}
+
 void AUBPlayerController::GameClear()
 {
 	K2_OnGameClear();
