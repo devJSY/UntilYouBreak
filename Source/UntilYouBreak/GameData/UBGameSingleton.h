@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "UBCharacterStat.h"
+#include "UBCharacterExp.h"
 #include "UBStageLevel.h"
 #include "UBGameSingleton.generated.h"
 
@@ -29,6 +30,10 @@ public:
 	UPROPERTY()
 	int32 CharacterMaxLevel;
 
+	// Character Exp Data Section
+public:
+	FORCEINLINE FUBCharacterExp GetCharacterExp(int32 InLevel) const { return CharacterExpTable.IsValidIndex(InLevel - 1) ? CharacterExpTable[InLevel - 1] : FUBCharacterExp(); }
+
 	// Stage Level Data Section
 public:
 	FORCEINLINE FUBStageLevel GetStageLevel(int32 InLevel) const { return StageLevelTable.IsValidIndex(InLevel - 1) ? StageLevelTable[InLevel - 1] : FUBStageLevel(); }
@@ -38,5 +43,6 @@ public:
 
 private:
 	TArray<FUBCharacterStat> CharacterStatTable;
+	TArray<FUBCharacterExp>	 CharacterExpTable;
 	TArray<FUBStageLevel>	 StageLevelTable;
 };

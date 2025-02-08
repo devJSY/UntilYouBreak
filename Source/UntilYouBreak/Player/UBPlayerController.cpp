@@ -4,6 +4,8 @@
 #include "UI/UBHUDWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/UBSaveGame.h"
+#include "Game/UBGameInstance.h"
+#include "Character/UBCharacterBase.h"
 
 DEFINE_LOG_CATEGORY(LogUBPlayerController);
 
@@ -32,6 +34,14 @@ void AUBPlayerController::BeginPlay()
 		SaveGameInstance->RetryCount = 0;
 	}
 
+	// 스탯 불러오기
+	AUBCharacterBase* ControlledPlayer = Cast<AUBCharacterBase>(GetPawn());
+	UUBGameInstance*  GameInst = Cast<UUBGameInstance>(GetGameInstance());
+	if (ControlledPlayer && GameInst)
+	{
+		GameInst->LoadCharacterStat(ControlledPlayer->GetStatComponent());
+	}
+
 	K2_OnGameRetryCount(SaveGameInstance->RetryCount);
 }
 
@@ -43,6 +53,14 @@ void AUBPlayerController::GameScoreChanged(int32 NewScore)
 void AUBPlayerController::StageClear()
 {
 	K2_OnStageClear();
+
+	// 스탯 저장하기
+	AUBCharacterBase* ControlledPlayer = Cast<AUBCharacterBase>(GetPawn());
+	UUBGameInstance*  GameInst = Cast<UUBGameInstance>(GetGameInstance());
+	if (ControlledPlayer && GameInst)
+	{
+		GameInst->SaveCharacterStat(ControlledPlayer->GetStatComponent());
+	}
 }
 
 void AUBPlayerController::GameClear()
@@ -57,6 +75,13 @@ void AUBPlayerController::GameOver()
 	if (!UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("Player0"), 0))
 	{
 		UE_LOG(LogUBPlayerController, Error, TEXT("Save Game Error!"));
+	}
+
+	// 스탯 리셋
+	UUBGameInstance* GameInst = Cast<UUBGameInstance>(GetGameInstance());
+	if (GameInst)
+	{
+		GameInst->ResetCharacterStat();
 	}
 
 	K2_OnGameRetryCount(SaveGameInstance->RetryCount);

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "GameData/UBCharacterStat.h"
 #include "UBGameInstance.generated.h"
 
 /**
@@ -18,8 +19,35 @@ public:
 	UUBGameInstance();
 
 public:
+	virtual void Init() override;
+
+	// Stage Save Game
+public:
 	virtual void Shutdown() override;
 
 	UFUNCTION(BlueprintCallable, Category = SaveGame, Meta = (DisplayName = "OnDeleteStageSaveGameCpp"))
 	void DeleteStageSaveGame();
+
+	// Character Stat
+public:
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	FUBCharacterStat SavedBaseStat;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	FUBCharacterStat SavedModifierStat;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	float SavedCurrentHp;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	int32 SavedCurrentExp;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	int32 SavedCurrentLevel;
+
+	UFUNCTION(BlueprintCallable, Category = CharacterStat, Meta = (DisplayName = "OnResetCharacterStatCpp"))
+	void ResetCharacterStat();
+
+	void SaveCharacterStat(class UUBCharacterStatComponent* StatComponent);
+	void LoadCharacterStat(class UUBCharacterStatComponent* StatComponent);
 };

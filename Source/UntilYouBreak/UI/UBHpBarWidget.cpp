@@ -24,7 +24,7 @@ void UUBHpBarWidget::NativeConstruct()
 	IUBCharacterWidgetInterface* CharacterWidget = Cast<IUBCharacterWidgetInterface>(OwningActor);
 	if (CharacterWidget)
 	{
-		CharacterWidget->SetupCharacterWidget(this);
+		CharacterWidget->SetupCharacterHpBarWidget(this);
 	}
 }
 
@@ -47,7 +47,7 @@ void UUBHpBarWidget::UpdateHpBar(float NewCurrentHp)
 {
 	CurrentHp = NewCurrentHp;
 
-	ensure(MaxHp > 0.0f);
+	ensure(MaxHp >= 0.0f);
 	if (HpProgressBar)
 	{
 		HpProgressBar->SetPercent(NewCurrentHp / MaxHp);

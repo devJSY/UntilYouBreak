@@ -24,6 +24,20 @@ UUBGameSingleton::UUBGameSingleton()
 	CharacterMaxLevel = CharacterStatTable.Num();
 	ensure(CharacterMaxLevel > 0);
 
+	// Character Exp
+	static ConstructorHelpers::FObjectFinder<UDataTable> CharacterExpDataTableRef(TEXT("/Script/Engine.DataTable'/Game/UntilYouBreak/GameData/UBCharacter_ExpTable.UBCharacter_ExpTable'"));
+	if (nullptr != CharacterExpDataTableRef.Object)
+	{
+		const UDataTable* DataTable = CharacterExpDataTableRef.Object;
+		check(DataTable->GetRowMap().Num() > 0);
+
+		TArray<uint8*> ValueArray;
+		DataTable->GetRowMap().GenerateValueArray(ValueArray);
+		Algo::Transform(ValueArray, CharacterExpTable, [](uint8* Value) {
+			return *reinterpret_cast<FUBCharacterExp*>(Value);
+		});
+	}
+
 	// Stage Level
 	static ConstructorHelpers::FObjectFinder<UDataTable> StageLevelDataTableRef(TEXT("/Script/Engine.DataTable'/Game/UntilYouBreak/GameData/UBStageLevel_Table.UBStageLevel_Table'"));
 	if (nullptr != StageLevelDataTableRef.Object)

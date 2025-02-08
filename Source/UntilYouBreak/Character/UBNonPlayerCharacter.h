@@ -24,6 +24,9 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 protected:
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+protected:
 	virtual void SetDead() override;
 	void		 NPCMeshLoadCompleted();
 

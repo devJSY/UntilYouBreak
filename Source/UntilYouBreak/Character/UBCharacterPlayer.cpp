@@ -16,6 +16,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Animation/UBAnimInstance.h"
 #include "Item/UBDropItem.h"
+#include "GameData/UBGameSingleton.h"
 
 AUBCharacterPlayer::AUBCharacterPlayer()
 {
@@ -353,8 +354,12 @@ void AUBCharacterPlayer::SetupHUDWidget(UUBHUDWidget* InHUDWidget)
 	{
 		InHUDWidget->UpdateStat(Stat->GetBaseStat(), Stat->GetModifierStat());
 		InHUDWidget->UpdateHpBar(Stat->GetCurrentHp());
+		InHUDWidget->UpdateLevel(Stat->GetCurrentLevel());
+		InHUDWidget->UpdateExpStat(Stat->GetCurrentExp(), UUBGameSingleton::Get().GetCharacterExp(Stat->GetCurrentLevel()).MaxExp);
 
 		Stat->OnStatChanged.AddUObject(InHUDWidget, &UUBHUDWidget::UpdateStat);
 		Stat->OnHpChanged.AddUObject(InHUDWidget, &UUBHUDWidget::UpdateHpBar);
+		Stat->OnLevelChanged.AddUObject(InHUDWidget, &UUBHUDWidget::UpdateLevel);
+		Stat->OnExpChanged.AddUObject(InHUDWidget, &UUBHUDWidget::UpdateExpStat);
 	}
 }

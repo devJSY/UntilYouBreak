@@ -6,6 +6,7 @@
 UUBCharacterStatComponent::UUBCharacterStatComponent()
 {
 	CurrentLevel = 1;
+	CurrentExp = 0.0f;
 
 	bWantsInitializeComponent = true;
 }
@@ -13,7 +14,6 @@ UUBCharacterStatComponent::UUBCharacterStatComponent()
 void UUBCharacterStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
 	SetLevelStat(CurrentLevel);
 	SetHp(BaseStat.MaxHp);
 }
@@ -23,6 +23,7 @@ void UUBCharacterStatComponent::SetLevelStat(int32 InNewLevel)
 	CurrentLevel = FMath::Clamp(InNewLevel, 1, UUBGameSingleton::Get().CharacterMaxLevel);
 	SetBaseStat(UUBGameSingleton::Get().GetCharacterStat(CurrentLevel));
 	check(BaseStat.MaxHp > 0.0f);
+	OnLevelChanged.Broadcast(CurrentLevel);
 }
 
 float UUBCharacterStatComponent::ApplyDamage(float InDamage)
@@ -37,6 +38,21 @@ float UUBCharacterStatComponent::ApplyDamage(float InDamage)
 	}
 
 	return ActualDamage;
+}
+
+void UUBCharacterStatComponent::GainExp(int32 InAmountExp)
+{
+	const int32 ActualExp = FMath::Clamp<int32>(InAmountExp, 0, InAmountExp);
+	CurrentExp += ActualExp;
+
+	// ·¹º§¾÷
+	while (CurrentExp >= UUBGameSingleton::Get().GetCharacterExp(CurrentLevel).MaxExp)
+	{
+		CurrentExp -= UUBGameSingleton::Get().GetCharacterExp(CurrentLevel).MaxExp;
+		SetLevelStat(CurrentLevel + 1);
+	}
+
+	OnExpChanged.Broadcast(CurrentExp, UUBGameSingleton::Get().GetCharacterExp(CurrentLevel).MaxExp);
 }
 
 void UUBCharacterStatComponent::SetHp(float NewHp)

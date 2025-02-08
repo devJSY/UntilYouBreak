@@ -88,12 +88,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUBCharacterStatComponent> Stat;
 
+public:
+	FORCEINLINE UUBCharacterStatComponent* GetStatComponent() const { return Stat; }
+
 	// UI Widget Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UWidgetComponent> HpBar;
 
-	virtual void SetupCharacterWidget(class UUBUserWidget* InUserWidget) override;
+	virtual void SetupCharacterHpBarWidget(class UUBUserWidget* InUserWidget) override;
 
 	// Item Section
 protected:
@@ -105,10 +108,13 @@ protected:
 	TArray<FTakeItemDelegateWrapper> TakeItemActions;
 
 	virtual void TakeItem(class UUBItemData* InItemData) override;
-	
+
 	virtual void EquipWeapon(class UUBItemData* InItemData);
 	virtual void DrinkPotion(class UUBItemData* InItemData);
 	virtual void ReadScroll(class UUBItemData* InItemData);
+
+public:
+	void EquipRandomWeapon();
 
 public:
 	UFUNCTION()
@@ -120,4 +126,5 @@ public:
 	void  SetLevel(int32 InNewLevel);
 	void  LevelUp();
 	void  ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat);
+	void  GainExp(int32 AmountExp);
 };

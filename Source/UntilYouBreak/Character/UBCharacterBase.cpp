@@ -17,10 +17,12 @@
 #include "Engine/DamageEvents.h"
 #include "UI/UBWidgetComponent.h"
 #include "UI/UBHpBarWidget.h"
+#include "UI/UBExpBarWidget.h"
 #include "UBCharacterStatComponent.h"
 #include "Item/UBItemData.h"
 #include "Item/UBWeaponItemData.h"
 #include "Item/UBDropItem.h"
+#include "Engine/AssetManager.h"
 
 DEFINE_LOG_CATEGORY(LogUBCharacter);
 
@@ -107,7 +109,7 @@ AUBCharacterBase::AUBCharacterBase()
 	HpBar = CreateDefaultSubobject<UUBWidgetComponent>(TEXT("Widget"));
 	HpBar->SetupAttachment(GetMesh());
 	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
-	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UntilYouBreak/UI/WBP_HpBarWidget.WBP_HpBarWidget_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UntilYouBreak/UI/WBP_HpBar.WBP_HpBar_C'"));
 	if (HpBarWidgetRef.Class)
 	{
 		HpBar->SetWidgetClass(HpBarWidgetRef.Class);
@@ -267,18 +269,20 @@ bool AUBCharacterBase::AttackHitCheck()
 	return HitDetected;
 }
 
-#include "UBCharacterPlayer.h"
+// #include "UBCharacterPlayer.h"
 
 float AUBCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	// Test
-	AUBCharacterPlayer* Player = Cast<AUBCharacterPlayer>(this);
-	if (!Player)
-	{
-		Stat->ApplyDamage(DamageAmount);
-	}
+	Stat->ApplyDamage(DamageAmount);
+
+	//// Test
+	// AUBCharacterPlayer* Player = Cast<AUBCharacterPlayer>(this);
+	// if (!Player)
+	//{
+	//	Stat->ApplyDamage(DamageAmount);
+	// }
 
 	return DamageAmount;
 }
@@ -298,7 +302,7 @@ void AUBCharacterBase::PlayDeadAnimation()
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
 }
 
-void AUBCharacterBase::SetupCharacterWidget(UUBUserWidget* InUserWidget)
+void AUBCharacterBase::SetupCharacterHpBarWidget(UUBUserWidget* InUserWidget)
 {
 	UUBHpBarWidget* HpBarWidget = Cast<UUBHpBarWidget>(InUserWidget);
 	if (HpBarWidget)
@@ -351,6 +355,28 @@ void AUBCharacterBase::ReadScroll(UUBItemData* InItemData)
 	UE_LOG(LogUBCharacter, Log, TEXT("Read Scroll"));
 }
 
+void AUBCharacterBase::EquipRandomWeapon()
+{
+	UAssetManager& Manager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetId> Assets;
+	Manager.GetPrimaryAssetIdList(TEXT("UBWeaponItemData"), Assets);
+	if (!Assets.IsEmpty())
+	{
+		int32		   RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		UUBWeaponItemData* WeaponItem = Cast<UUBWeaponItemData>(AssetPtr.Get());
+		if (WeaponItem)
+		{
+			EquipWeapon(WeaponItem);
+		}
+	}
+}
+
 void AUBCharacterBase::DropWeapon(AActor* DestroyedActor)
 {
 	if (WeaponItemData)
@@ -386,4 +412,9 @@ void AUBCharacterBase::ApplyStat(const FUBCharacterStat& BaseStat, const FUBChar
 {
 	float MovementSpeed = (BaseStat + ModifierStat).MovementSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
+}
+
+void AUBCharacterBase::GainExp(int32 AmountExp)
+{
+	Stat->GainExp(AmountExp);
 }

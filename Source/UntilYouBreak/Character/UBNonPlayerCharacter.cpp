@@ -2,10 +2,11 @@
 
 #include "Character/UBNonPlayerCharacter.h"
 #include "UBNonPlayerCharacter.h"
-#include "Engine/AssetManager.h"
 #include "AI/UBAIController.h"
 #include "Character/UBCharacterStatComponent.h"
 #include "Item/UBWeaponItemData.h"
+#include "GameData/UBGameSingleton.h"
+#include "Engine/AssetManager.h"
 
 AUBNonPlayerCharacter::AUBNonPlayerCharacter()
 {
@@ -19,26 +20,6 @@ void AUBNonPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 랜덤 아이템 소유 설정
-	UAssetManager& Manager = UAssetManager::Get();
-
-	TArray<FPrimaryAssetId> Assets;
-	Manager.GetPrimaryAssetIdList(TEXT("UBWeaponItemData"), Assets);
-	if (!Assets.IsEmpty())
-	{
-		int32		   RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
-		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
-		if (AssetPtr.IsPending())
-		{
-			AssetPtr.LoadSynchronous();
-		}
-		UUBWeaponItemData* WeaponItem = Cast<UUBWeaponItemData>(AssetPtr.Get());
-		if (WeaponItem)
-		{
-			EquipWeapon(WeaponItem);
-		}
-	}
-
 	// 사망 시 드랍 아이템 생성
 	OnDestroyed.AddDynamic(this, &AUBCharacterBase::DropWeapon);
 }
@@ -51,6 +32,22 @@ void AUBNonPlayerCharacter::PostInitializeComponents()
 	ensure(NPCMeshes.Num() > 0);
 	int32 RandIndex = FMath::RandRange(0, NPCMeshes.Num() - 1);
 	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(NPCMeshes[RandIndex], FStreamableDelegate::CreateUObject(this, &AUBNonPlayerCharacter::NPCMeshLoadCompleted));
+}
+
+float AUBNonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (Stat->GetCurrentHp() <= 0.0f)
+	{
+		AUBCharacterBase* Killer = Cast<AUBCharacterBase>(DamageCauser);
+		if (Killer)
+		{
+			Killer->GainExp(UUBGameSingleton::Get().GetCharacterExp(Stat->GetCurrentLevel()).RewardExp);
+		}
+	}
+
+	return DamageAmount;
 }
 
 void AUBNonPlayerCharacter::SetDead()

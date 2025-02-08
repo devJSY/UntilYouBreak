@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Character/UBCharacterStatComponent.h"
 #include "UBSaveGame.generated.h"
 
 /**

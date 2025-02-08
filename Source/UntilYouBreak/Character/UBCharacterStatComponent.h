@@ -10,6 +10,8 @@
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /*CurrentHp*/);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChangedDelegate, const FUBCharacterStat& /*BaseStat*/, const FUBCharacterStat& /*ModifierStat*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnExpChangedDelegate, const int32 /*CurrentExp*/, const int32 /*MaxExp*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnLevelChangedDelegate, const int32 /*CurrentLevel*/);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNTILYOUBREAK_API UUBCharacterStatComponent : public UActorComponent
@@ -23,12 +25,14 @@ protected:
 	virtual void InitializeComponent() override;
 
 public:
-	FOnHpZeroDelegate	   OnHpZero;
-	FOnHpChangedDelegate   OnHpChanged;
-	FOnStatChangedDelegate OnStatChanged;
+	FOnHpZeroDelegate		OnHpZero;
+	FOnHpChangedDelegate	OnHpChanged;
+	FOnStatChangedDelegate	OnStatChanged;
+	FOnExpChangedDelegate	OnExpChanged;
+	FOnLevelChangedDelegate OnLevelChanged;
 
 	void			  SetLevelStat(int32 InNewLevel);
-	FORCEINLINE float GetCurrentLevel() const { return CurrentLevel; }
+	FORCEINLINE int32 GetCurrentLevel() const { return CurrentLevel; }
 	FORCEINLINE void  AddBaseStat(const FUBCharacterStat& InAddBaseStat)
 	{
 		float HealAmount = FMath::Clamp(InAddBaseStat.MaxHp - BaseStat.MaxHp, 0.0f, InAddBaseStat.MaxHp);
@@ -61,16 +65,21 @@ public:
 		CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, GetTotalStat().MaxHp);
 		OnHpChanged.Broadcast(CurrentHp);
 	}
+	void  SetHp(float NewHp);
 	float ApplyDamage(float InDamage);
 
-protected:
-	void SetHp(float NewHp);
+	void			  GainExp(int32 InAmountExp);
+	FORCEINLINE int32 GetCurrentExp() const { return CurrentExp; }
 
+protected:
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
 	float CurrentHp;
 
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
-	float CurrentLevel;
+	int32 CurrentLevel;
+
+	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
+	int32 CurrentExp;
 
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	FUBCharacterStat BaseStat;

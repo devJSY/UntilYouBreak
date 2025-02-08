@@ -33,6 +33,10 @@ void AUBColosseumGimmick::OnEnemySpawn()
 			{
 				ABOpponentCharacter->OnDestroyed.AddDynamic(this, &AUBColosseumGimmick::OnEnemyDestroyed);
 				ABOpponentCharacter->SetLevel(CurrentStageLevel);
+				if (CurrentStageLevel >= 5)
+				{
+					ABOpponentCharacter->EquipRandomWeapon();
+				}
 				ABOpponentCharacter->FinishSpawning(SpawnTransform);
 			}
 		}
