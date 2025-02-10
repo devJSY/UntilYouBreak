@@ -74,6 +74,11 @@ protected:
 	virtual bool  AttackHitCheck() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	bool bGodMode = false;
+
+public:
+	void EnableGodMode() { bGodMode = !bGodMode; };
+
 	// Dead Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
@@ -109,11 +114,16 @@ protected:
 
 	virtual void TakeItem(class UUBItemData* InItemData) override;
 
+public:
 	virtual void EquipWeapon(class UUBItemData* InItemData);
 	virtual void DrinkPotion(class UUBItemData* InItemData);
 	virtual void ReadScroll(class UUBItemData* InItemData);
 
-public:
+	class UUBWeaponItemData* GetWeaponItemData() const
+	{
+		return WeaponItemData;
+	};
+
 	void EquipRandomWeapon();
 
 public:
@@ -124,7 +134,6 @@ public:
 public:
 	int32 GetLevel();
 	void  SetLevel(int32 InNewLevel);
-	void  LevelUp();
 	void  ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat);
 	void  GainExp(int32 AmountExp);
 };

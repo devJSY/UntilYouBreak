@@ -269,20 +269,14 @@ bool AUBCharacterBase::AttackHitCheck()
 	return HitDetected;
 }
 
-// #include "UBCharacterPlayer.h"
-
 float AUBCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	Stat->ApplyDamage(DamageAmount);
-
-	//// Test
-	// AUBCharacterPlayer* Player = Cast<AUBCharacterPlayer>(this);
-	// if (!Player)
-	//{
-	//	Stat->ApplyDamage(DamageAmount);
-	// }
+	if (!bGodMode)
+	{
+		Stat->ApplyDamage(DamageAmount);
+	}
 
 	return DamageAmount;
 }
@@ -401,11 +395,6 @@ int32 AUBCharacterBase::GetLevel()
 void AUBCharacterBase::SetLevel(int32 InNewLevel)
 {
 	Stat->SetLevelStat(InNewLevel);
-}
-
-void AUBCharacterBase::LevelUp()
-{
-	SetLevel(GetLevel() + 1);
 }
 
 void AUBCharacterBase::ApplyStat(const FUBCharacterStat& BaseStat, const FUBCharacterStat& ModifierStat)

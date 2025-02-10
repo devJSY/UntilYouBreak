@@ -6,6 +6,7 @@
 #include "Game/UBSaveGame.h"
 #include "Game/UBGameInstance.h"
 #include "Character/UBCharacterBase.h"
+#include "Item/UBWeaponItemData.h"
 
 DEFINE_LOG_CATEGORY(LogUBPlayerController);
 
@@ -39,7 +40,8 @@ void AUBPlayerController::BeginPlay()
 	UUBGameInstance*  GameInst = Cast<UUBGameInstance>(GetGameInstance());
 	if (ControlledPlayer && GameInst)
 	{
-		GameInst->LoadCharacterStat(ControlledPlayer->GetStatComponent());
+		GameInst->LoadCharacterInfo(ControlledPlayer->GetStatComponent());
+		ControlledPlayer->EquipWeapon(GameInst->GetWeaponItemData());
 	}
 
 	K2_OnGameRetryCount(SaveGameInstance->RetryCount);
@@ -59,7 +61,7 @@ void AUBPlayerController::StageClear()
 	UUBGameInstance*  GameInst = Cast<UUBGameInstance>(GetGameInstance());
 	if (ControlledPlayer && GameInst)
 	{
-		GameInst->SaveCharacterStat(ControlledPlayer->GetStatComponent());
+		GameInst->SaveCharacterInfo(ControlledPlayer->GetStatComponent(), ControlledPlayer->GetWeaponItemData());
 	}
 }
 

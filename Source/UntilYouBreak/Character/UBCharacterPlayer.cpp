@@ -73,10 +73,10 @@ AUBCharacterPlayer::AUBCharacterPlayer()
 		AttackAction = InputActionAttackRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLevelUpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_LeevlUp.IA_LeevlUp'"));
-	if (InputActionLevelUpRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionGodModeRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_GodMode.IA_GodMode'"));
+	if (InputActionGodModeRef.Object)
 	{
-		LevelUpAction = InputActionLevelUpRef.Object;
+		GodModeAction = InputActionGodModeRef.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionPickupRef(TEXT("/Script/EnhancedInput.InputAction'/Game/UntilYouBreak/Input/Actions/IA_Pickup.IA_Pickup'"));
@@ -126,8 +126,8 @@ void AUBCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::Attack);
 
-		// LevelUp
-		EnhancedInputComponent->BindAction(LevelUpAction, ETriggerEvent::Triggered, this, &AUBCharacterBase::LevelUp);
+		// GodMode
+		EnhancedInputComponent->BindAction(GodModeAction, ETriggerEvent::Triggered, this, &AUBCharacterBase::EnableGodMode);
 
 		// Pickup
 		EnhancedInputComponent->BindAction(PickupAction, ETriggerEvent::Triggered, this, &AUBCharacterPlayer::Pickup);

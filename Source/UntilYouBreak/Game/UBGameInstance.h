@@ -28,7 +28,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = SaveGame, Meta = (DisplayName = "OnDeleteStageSaveGameCpp"))
 	void DeleteStageSaveGame();
 
-	// Character Stat
+	// Character Info
 public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	FUBCharacterStat SavedBaseStat;
@@ -45,9 +45,16 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	int32 SavedCurrentLevel;
 
+	class UUBWeaponItemData* WeaponItemData;
+
 	UFUNCTION(BlueprintCallable, Category = CharacterStat, Meta = (DisplayName = "OnResetCharacterStatCpp"))
 	void ResetCharacterStat();
 
-	void SaveCharacterStat(class UUBCharacterStatComponent* StatComponent);
-	void LoadCharacterStat(class UUBCharacterStatComponent* StatComponent);
+	void SaveCharacterInfo(class UUBCharacterStatComponent* InStatComponent, class UUBWeaponItemData* InWeaponItemData);
+	void LoadCharacterInfo(class UUBCharacterStatComponent* InStatComponent);
+
+	class UUBWeaponItemData* GetWeaponItemData() const
+	{
+		return WeaponItemData;
+	};
 };

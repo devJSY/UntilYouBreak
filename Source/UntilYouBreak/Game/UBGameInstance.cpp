@@ -44,28 +44,34 @@ void UUBGameInstance::ResetCharacterStat()
 	SavedCurrentHp = SavedBaseStat.MaxHp;
 	SavedCurrentExp = 0;
 	SavedCurrentLevel = 1;
+	WeaponItemData = nullptr;
 }
 
-void UUBGameInstance::SaveCharacterStat(UUBCharacterStatComponent* StatComponent)
+void UUBGameInstance::SaveCharacterInfo(UUBCharacterStatComponent* InStatComponent, UUBWeaponItemData* InWeaponItemData)
 {
-	if (!StatComponent)
-		return;
+	if (InStatComponent)
+	{
+		SavedCurrentLevel = InStatComponent->GetCurrentLevel();
+		SavedCurrentHp = InStatComponent->GetCurrentHp();
+		SavedCurrentExp = InStatComponent->GetCurrentExp();
+		SavedBaseStat = InStatComponent->GetBaseStat();
+		SavedModifierStat = InStatComponent->GetModifierStat();
+	}
 
-	SavedCurrentLevel = StatComponent->GetCurrentLevel();
-	SavedCurrentHp = StatComponent->GetCurrentHp();
-	SavedCurrentExp = StatComponent->GetCurrentExp();
-	SavedBaseStat = StatComponent->GetBaseStat();
-	SavedModifierStat = StatComponent->GetModifierStat();
+	if (InWeaponItemData)
+	{
+		WeaponItemData = InWeaponItemData;
+	}
 }
 
-void UUBGameInstance::LoadCharacterStat(UUBCharacterStatComponent* StatComponent)
+void UUBGameInstance::LoadCharacterInfo(UUBCharacterStatComponent* InStatComponent)
 {
-	if (!StatComponent)
-		return;
-
-	StatComponent->SetLevelStat(SavedCurrentLevel);
-	StatComponent->SetHp(SavedCurrentHp);
-	StatComponent->GainExp(SavedCurrentExp);
-	StatComponent->SetBaseStat(SavedBaseStat);
-	StatComponent->SetModifierStat(SavedModifierStat);
+	if (InStatComponent)
+	{
+		InStatComponent->SetLevelStat(SavedCurrentLevel);
+		InStatComponent->SetHp(SavedCurrentHp);
+		InStatComponent->GainExp(SavedCurrentExp);
+		InStatComponent->SetBaseStat(SavedBaseStat);
+		InStatComponent->SetModifierStat(SavedModifierStat);
+	}
 }
