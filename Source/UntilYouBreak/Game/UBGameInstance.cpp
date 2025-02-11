@@ -4,6 +4,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Character/UBCharacterStatComponent.h"
 #include "GameData/UBGameSingleton.h"
+#include "Engine/AssetManager.h"
+#include "Item/UBWeaponItemData.h"
 
 UUBGameInstance::UUBGameInstance()
 {
@@ -44,7 +46,20 @@ void UUBGameInstance::ResetCharacterStat()
 	SavedCurrentHp = SavedBaseStat.MaxHp;
 	SavedCurrentExp = 0;
 	SavedCurrentLevel = 1;
-	WeaponItemData = nullptr;
+
+	// DefaultAsset
+	FPrimaryAssetId AssetId = FPrimaryAssetId(FPrimaryAssetType("UBWeaponItemData"), FName("UBW_DefaultWeapon"));
+	FSoftObjectPtr	AssetPtr(UAssetManager::Get().GetPrimaryAssetPath(AssetId));
+
+	if (!AssetPtr.IsNull())
+	{
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		WeaponItemData = Cast<UUBWeaponItemData>(AssetPtr.Get());
+		ensure(WeaponItemData != nullptr);
+	}
 }
 
 void UUBGameInstance::SaveCharacterInfo(UUBCharacterStatComponent* InStatComponent, UUBWeaponItemData* InWeaponItemData)

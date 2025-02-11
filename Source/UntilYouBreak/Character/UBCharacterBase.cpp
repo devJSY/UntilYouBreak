@@ -371,6 +371,25 @@ void AUBCharacterBase::EquipRandomWeapon()
 	}
 }
 
+void AUBCharacterBase::EquipDefaultWeapon()
+{
+	FPrimaryAssetId AssetId = FPrimaryAssetId(FPrimaryAssetType("UBWeaponItemData"), FName("UBW_DefaultWeapon"));
+	FSoftObjectPtr	AssetPtr(UAssetManager::Get().GetPrimaryAssetPath(AssetId));
+
+	if (!AssetPtr.IsNull())
+	{
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		UUBWeaponItemData* WeaponItem = Cast<UUBWeaponItemData>(AssetPtr.Get());
+		if (WeaponItem)
+		{
+			EquipWeapon(WeaponItem);
+		}
+	}
+}
+
 void AUBCharacterBase::DropWeapon(AActor* DestroyedActor)
 {
 	if (WeaponItemData)

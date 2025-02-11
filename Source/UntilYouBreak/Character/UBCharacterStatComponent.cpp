@@ -24,6 +24,7 @@ void UUBCharacterStatComponent::SetLevelStat(int32 InNewLevel)
 	SetBaseStat(UUBGameSingleton::Get().GetCharacterStat(CurrentLevel));
 	check(BaseStat.MaxHp > 0.0f);
 	OnLevelChanged.Broadcast(CurrentLevel);
+	HealHp(GetTotalStat().MaxHp);	
 }
 
 float UUBCharacterStatComponent::ApplyDamage(float InDamage)

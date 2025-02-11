@@ -77,7 +77,10 @@ protected:
 	bool bGodMode = false;
 
 public:
-	void EnableGodMode() { bGodMode = !bGodMode; };
+	void EnableGodMode()
+	{
+		bGodMode = !bGodMode;
+	};
 
 	// Dead Section
 protected:
@@ -125,6 +128,7 @@ public:
 	};
 
 	void EquipRandomWeapon();
+	void EquipDefaultWeapon();
 
 public:
 	UFUNCTION()
